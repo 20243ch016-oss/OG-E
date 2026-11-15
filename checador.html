@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OG-E | Terminal Checador</title>
+  <style>
+    :root {
+      --navy: #12274c;
+      --purple: #6d28d9;
+      --purple-light: #7c3aed;
+      --bg: #0b1324;
+      --card: #131f38;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --ok: #10b981;
+      --warn: #f59e0b;
+      --err: #ef4444;
+    }
+    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      margin: 0; min-height: 100vh; background: radial-gradient(circle at top, #1b2f59, var(--bg));
+      color: var(--text); display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .kiosk {
+      width: 100%; max-width: 880px; background: var(--card); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,.45);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    @media (max-width: 720px) { .kiosk { grid-template-columns: 1fr; } }
+    .header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: 14px; }
+    .brand { font-size: 1.4rem; font-weight: 800; letter-spacing: .5px; }
+    .brand span { color: #a78bfa; }
+    .clock { text-align: right; }
+    .clock .time { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .clock .date { font-size: .85rem; color: var(--muted); text-transform: capitalize; }
+    .cam-box {
+      position: relative; background: #070d19; border-radius: 14px; overflow: hidden;
+      aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(124,58,237,.4);
+    }
+    video, canvas { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .cam-badge {
+      position: absolute; bottom: 10px; left: 10px; background: rgba(18,39,76,.85);
+      padding: 5px 10px; border-radius: 99px; font-size: .75rem; display: flex; align-items: center; gap: 6px;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: pulse 1.5s infinite; }
+    @keyframes pulse { 50% { opacity: .3; } }
+    .controls { display: flex; flex-direction: column; gap: 12px; }
+    label { font-size: .85rem; color: var(--muted); font-weight: 600; }
+    input, select {
+      width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15);
+      background: #0b1324; color: #fff; font-size: 1.1rem; outline: none;
+    }
+    input:focus, select:focus { border-color: var(--purple-light); }
+    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .key {
+      padding: 12px; border: none; border-radius: 10px; background: rgba(255,255,255,.07);
+      color: #fff; font-size: 1.15rem; font-weight: 600; cursor: pointer; transition: .15s;
+    }
+    .key:hover { background: rgba(124,58,237,.35); }
+    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+    .btn {
+      padding: 14px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
+      cursor: pointer; color: #fff; transition: transform .1s, opacity .2s;
+    }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-in { background: linear-gradient(135deg, #059669, #10b981); }
+    .btn-out { background: linear-gradient(135deg, var(--purple), var(--purple-light)); }
+    .status {
+      grid-column: 1 / -1; padding: 14px; border-radius: 12px; text-align: center;
+      font-weight: 600; display: none;
+    }
+    .status.ok { display: block; background: rgba(16,185,129,.15); border: 1px solid var(--ok); color: #6ee7b7; }
+    .status.err { display: block; background: rgba(239,68,68,.15); border: 1px solid var(--err); color: #fca5a5; }
+  </style>
+</head>
+<body>
+  <div class="kiosk">
+    <div class="header">
+      <div class="brand">OG<span>-E</span> · Control de Asistencia</div>
+      <div class="clock">
+        <div class="time" id="reloj">00:00:00</div>
+        <div class="date" id="fecha">Cargando fecha...</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="cam-box">
+        <video id="video" autoplay playsinline muted></video>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <div class="cam-badge"><span class="dot"></span> Evidencia visual activa</div>
+      </div>
+      <p style="font-size:.8rem; color:var(--muted); margin:8px 0 0;">
+        Al registrar entrada o salida se captura automáticamente una fotografía como respaldo de asistencia.
+      </p>
+    </div>
+
+    <div class="controls">
+      <div>
+        <label>Selección rápida (o escribe tu ID abajo)</label>
+        <select id="listaEmp" onchange="document.getElementById('empId').value = this.value">
+          <option value="">Cargando colaboradores...</option>
+        </select>
+      </div>
+
+      <div>
+        <label>ID de Colaborador</label>
+        <input type="text" id="empId" placeholder="Ej. EMP-01 o 1" autocomplete="off" />
+      </div>
+
+      <div class="keypad">
+        <button class="key" onclick="addKey('1')">1</button>
+        <button class="key" onclick="addKey('2')">2</button>
+        <button class="key" onclick="addKey('3')">3</button>
+        <button class="key" onclick="addKey('4')">4</button>
+        <button class="key" onclick="addKey('5')">5</button>
+        <button class="key" onclick="addKey('6')">6</button>
+        <button class="key" onclick="addKey('7')">7</button>
+        <button class="key" onclick="addKey('8')">8</button>
+        <button class="key" onclick="addKey('9')">9</button>
+        <button class="key" onclick="clearKey()">Borrar</button>
+        <button class="key" onclick="addKey('0')">0</button>
+        <button class="key" onclick="delKey()">⌫</button>
+      </div>
+
+      <div class="actions">
+        <button class="btn btn-in" id="btnIn" onclick="registrar('entrada')">🟢 Entrada</button>
+        <button class="btn btn-out" id="btnOut" onclick="registrar('salida')">🟣 Salida</button>
+      </div>
+    </div>
+
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    // 1. Reloj en tiempo real
+    function actualizarReloj() {
+      const ahora = new Date();
+      document.getElementById('reloj').textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
+      document.getElementById('fecha').textContent = ahora.toLocaleDateString('es-MX', {
+        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      });
+    }
+    setInterval(actualizarReloj, 1000);
+    actualizarReloj();
+
+    // 2. Encender cámara
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 480 } })
+      .then((stream) => { video.srcObject = stream; })
+      .catch(() => { console.warn('Cámara no disponible, se registrará sin foto.'); });
+
+    // 3. Cargar empleados desde OG-E
+    fetch('/api/checar')
+      .then((r) => r.json())
+      .then((data) => {
+        const sel = document.getElementById('listaEmp');
+        if (data.ok && data.empleados.length) {
+          sel.innerHTML = '<option value="">-- Selecciona un colaborador --</option>' +
+            data.empleados.map((e) => `<option value="${e.id}">${e.id} · ${e.nombre}</option>`).join('');
+        } else {
+          sel.innerHTML = '<option value="">Escribe el ID manualmente</option>';
+        }
+      })
+      .catch(() => {});
+
+    function addKey(k) { document.getElementById('empId').value += k; }
+    function clearKey() { document.getElementById('empId').value = ''; }
+    function delKey() {
+      const inp = document.getElementById('empId');
+      inp.value = inp.value.slice(0, -1);
+    }
+
+    function capturarFoto() {
+      if (!video.videoWidth) return '';
+      const canvas = document.getElementById('canvas');
+      canvas.width = 320;
+      canvas.height = 240;
+      const ctx = canvas.getContext('2d');
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.65);
+    }
+
+    async function registrar(tipo) {
+      const empId = document.getElementById('empId').value.trim();
+      const status = document.getElementById('status');
+      if (!empId) {
+        status.className = 'status err';
+        status.textContent = '⚠️ Ingresa o selecciona un ID de colaborador primero.';
+        return;
+      }
+
+      document.getElementById('btnIn').disabled = true;
+      document.getElementById('btnOut').disabled = true;
+      status.className = 'status';
+      status.style.display = 'none';
+
+      try {
+        const foto = capturarFoto();
+        const res = await fetch('/api/checar', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ empId, tipo, foto })
+        });
+        const data = await res.json();
+
+        if (!res.ok || !data.ok) {
+          status.className = 'status err';
+          status.textContent = '❌ ' + (data.error || 'No se pudo registrar');
+        } else {
+          status.className = 'status ok';
+          status.textContent = `✅ ${tipo.toUpperCase()} registrada para ${data.empleado} a las ${data.hora} hrs`;
+          document.getElementById('empId').value = '';
+          document.getElementById('listaEmp').value = '';
+        }
+      } catch (e) {
+        status.className = 'status err';
+        status.textContent = '❌ Error de conexión con el servidor.';
+      } finally {
+        document.getElementById('btnIn').disabled = false;
+        document.getElementById('btnOut').disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
