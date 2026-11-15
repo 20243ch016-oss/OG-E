@@ -184,7 +184,7 @@ table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 5
 th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--line); }
 td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
 tr:hover td { background: var(--surface2); }
-.av { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--navy), var(--brand2)); color: #fff; font-weight: 800; font-size: 0.75rem; margin-right: 8px; vertical-align: middle; overflow: hidden; }
+.av { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--navy), var(--brand2)); color: #fff; font-weight: 800; font-size: 0.78rem; margin-right: 8px; vertical-align: middle; overflow: hidden; }
 img.av { object-fit: cover; display: inline-block; border: 2px solid var(--brand2); }
 .prog { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
 .prog i { display: block; height: 100%; background: linear-gradient(90deg, var(--navy2), var(--brand2)); }
@@ -199,7 +199,7 @@ input:focus, select:focus, textarea:focus { outline: 2px solid var(--brand2); }
 .btn.s { padding: 5px 10px; font-size: 0.78rem; }
 .act { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
 .empty { text-align: center; color: var(--muted); padding: 28px 10px; font-size: 0.92rem; }
-dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text); padding: 22px; width: min(440px, 92vw); box-shadow: var(--shadow); }
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text); padding: 22px; width: min(450px, 92vw); box-shadow: var(--shadow); }
 dialog::backdrop { background: rgba(7, 11, 20, 0.65); }
 dialog form { display: grid; gap: 12px; }
 dialog h3 { margin: 0; }
@@ -209,8 +209,8 @@ dialog h3 { margin: 0; }
 .rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 14px; }
 .rule-card { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand2); border-radius: 12px; padding: 11px 13px; font-size: 0.82rem; }
 .rule-card strong { display: block; color: var(--brand); margin-bottom: 3px; font-size: 0.86rem; }
-.pf-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-#camVideo { width: 100%; border-radius: 12px; background: #000; transform: scaleX(-1); max-height: 300px; object-fit: cover; }
+.pf-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#camVideo { width: 100%; border-radius: 12px; background: #000; transform: scaleX(-1); max-height: 320px; object-fit: cover; }
 
 @media (max-width: 820px) {
   #login { grid-template-columns: 1fr; }
@@ -242,7 +242,7 @@ dialog h3 { margin: 0; }
 .lnk { color: var(--text); font-weight: 700; text-decoration: none; }
 .lnk:hover { color: var(--brand); }
 .phead { display: flex; align-items: center; gap: 16px; margin: 12px 0 14px; flex-wrap: wrap; }
-.av.big { width: 72px; height: 72px; font-size: 1.35rem; margin: 0; }
+.av.big { width: 78px; height: 78px; font-size: 1.45rem; margin: 0; }
 
 @media (max-width: 820px) {
   .links { position: fixed; left: 0; right: 0; bottom: 0; background: #091224; border-top: 1px solid rgba(167, 139, 250, 0.25); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); justify-content: space-around; z-index: 15; overflow: visible; }
@@ -268,7 +268,7 @@ dialog h4 { margin: 8px 0 0; color: var(--brand); }
 </style>
 <script>
 /* ====== CONFIGURACIÓN DE BASE DE DATOS (Supabase) ====== */
-window.RH_CONFIG = { url: "https://dyuoduqllenptsmwnfqx.supabase.co", key:"sb_publishable_SIIPZTqd_KCFMmD80-gtgA_LxKq1aTf"};
+window.RH_CONFIG = { url: "https://dyuoduqllenptsmwnfqx.supabase.co", key: "sb_publishable_SIIPZTqd_KCFMmD80-gtgA_LxKq1aTf" };
 </script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
@@ -612,14 +612,17 @@ window.RH_CONFIG = { url: "https://dyuoduqllenptsmwnfqx.supabase.co", key:"sb_pu
 </div>
 
 <!-- MODAL CÁMARA FOTO DE PERFIL -->
-<dialog id="dlgCam">
+<dialog id="dlgCam" onclose="cerrarCamara()">
   <form onsubmit="event.preventDefault()">
     <h3>Tomar foto de perfil</h3>
     <video id="camVideo" autoplay playsinline></video>
     <canvas id="camCanvas" style="display:none"></canvas>
-    <div class="act" style="justify-content:flex-end">
-      <button class="btn" type="button" onclick="capturarFoto()">📸 Capturar y guardar</button>
-      <button class="btn g" type="button" onclick="cerrarCamara()">Cancelar</button>
+    <div class="act" style="justify-content:space-between">
+      <button class="btn g s" type="button" onclick="cambiarCamara()">🔄 Cambiar cámara</button>
+      <div class="act">
+        <button class="btn" type="button" onclick="capturarFoto()">📸 Capturar y guardar</button>
+        <button class="btn g" type="button" onclick="cerrarCamara()">Cancelar</button>
+      </div>
     </div>
   </form>
 </dialog>
@@ -628,7 +631,19 @@ window.RH_CONFIG = { url: "https://dyuoduqllenptsmwnfqx.supabase.co", key:"sb_pu
   <form onsubmit="saveEmp(event)">
     <h3 id="dT">Nuevo empleado</h3>
     <input type="hidden" id="eId">
-    <label>Nombre completo<input id="eN" required></label>
+    <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);padding:12px;border-radius:12px">
+      <div id="eFotoPrev"></div>
+      <div style="display:grid;gap:6px;flex:1">
+        <span style="font-size:0.78rem;font-weight:700;color:var(--muted)">Foto de perfil (opcional)</span>
+        <div class="act">
+          <button class="btn g s" type="button" onclick="abrirCamara('modal')">📷 Tomar foto</button>
+          <button class="btn g s" type="button" onclick="$('eFotoFile').click()">🖼️ Subir archivo</button>
+          <button class="btn g s" type="button" id="btnDelEFoto" style="display:none" onclick="quitarFotoModal()">✕ Quitar</button>
+        </div>
+        <input type="file" id="eFotoFile" accept="image/*" style="display:none" onchange="procesarFoto(this, 'modal')">
+      </div>
+    </div>
+    <label>Nombre completo<input id="eN" required oninput="renderFotoModal()"></label>
     <label>Puesto<input id="eP" required></label>
     <label>Fecha de ingreso a la empresa<input type="date" id="eF" required></label>
     <div class="bar" style="margin:0">
@@ -736,6 +751,9 @@ var guardando = false;
 var VER = 0;
 var ACCESOS = {};
 var camStream = null;
+var camTarget = 'perfil';
+var camFacing = 'user';
+var eFotoTemp = '';
 
 var SVG_EYE_OPEN = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
 var SVG_EYE_OFF = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
@@ -1284,7 +1302,8 @@ function usuarioOcupado() {
   var campo = a && ['INPUT', 'SELECT', 'TEXTAREA'].indexOf(a.tagName) > -1;
   var enExpediente = campo && $('pf') && $('pf').contains(a);
   var archivo = $('dF') && $('dF').files && $('dF').files.length;
-  return !!(enExpediente || archivo);
+  var modalAbierto = ($('dlg') && $('dlg').open) || ($('dlgP') && $('dlgP').open) || ($('dlgCam') && $('dlgCam').open);
+  return !!(enExpediente || archivo || modalAbierto);
 }
 
 function revisarCambios() {
@@ -1461,8 +1480,25 @@ function rPers() {
     L.map(function(e) {
       var f = faltanDocs(e);
       var ac = mode == 'cloud' ? !!ACCESOS[e.id] : Object.keys(u).some(function(k) { return u[k].emp == e.id; });
-      return '<tr style="' + (e.estatus == 'Baja' ? 'opacity:.55' : '') + '"><td>' + avatar(e) + '<a href="#" class="lnk" onclick="verPerfil(\'' + e.id + '\');return false">' + esc(e.nombre) + '</a>' + (e.estatus == 'Baja' ? ' <span class="tag bd">Baja</span>' : '') + '<br><small style="color:var(--muted)">' + esc(e.puesto) + '</small></td><td>' + e.hEnt + ' – ' + e.hSal + '</td><td>' + antig(e.ingreso) + '</td><td>' + (f ? '<span class="tag bd">Faltan ' + f + '</span>' : '<span class="tag ok">Completo</span>') + '</td><td>' + pdPct(e) + '%</td><td>' + (ac ? '🔑' : '—') + '</td><td><div class="act"><button class="btn g s" onclick="verPerfil(\'' + e.id + '\')">Expediente</button><button class="btn g s" onclick="openEmp(\'' + e.id + '\')">Editar</button><button class="btn g s" onclick="del(\'emps\',\'' + e.id + '\',this)">Eliminar</button></div></td></tr>';
+      return '<tr style="' + (e.estatus == 'Baja' ? 'opacity:.55' : '') + '"><td><span style="cursor:pointer" onclick="verPerfil(\'' + e.id + '\')">' + avatar(e) + '</span><a href="#" class="lnk" onclick="verPerfil(\'' + e.id + '\');return false">' + esc(e.nombre) + '</a>' + (e.estatus == 'Baja' ? ' <span class="tag bd">Baja</span>' : '') + '<br><small style="color:var(--muted)">' + esc(e.puesto) + '</small></td><td>' + e.hEnt + ' – ' + e.hSal + '</td><td>' + antig(e.ingreso) + '</td><td>' + (f ? '<span class="tag bd">Faltan ' + f + '</span>' : '<span class="tag ok">Completo</span>') + '</td><td>' + pdPct(e) + '%</td><td>' + (ac ? '🔑' : '—') + '</td><td><div class="act"><button class="btn g s" onclick="verPerfil(\'' + e.id + '\')">Expediente</button><button class="btn g s" onclick="openEmp(\'' + e.id + '\')">Editar</button><button class="btn g s" onclick="del(\'emps\',\'' + e.id + '\',this)">Eliminar</button></div></td></tr>';
     }).join('') + '</table>';
+}
+
+function renderFotoModal() {
+  var nom = $('eN') ? $('eN').value.trim() : '';
+  var prev = $('eFotoPrev');
+  var btnDel = $('btnDelEFoto');
+  if (prev) {
+    prev.innerHTML = eFotoTemp
+      ? '<img class="av big" src="' + esc(eFotoTemp) + '" alt="Vista previa">'
+      : '<span class="av big">' + esc(ini(nom || '?')) + '</span>';
+  }
+  if (btnDel) btnDel.style.display = eFotoTemp ? '' : 'none';
+}
+
+function quitarFotoModal() {
+  eFotoTemp = '';
+  renderFotoModal();
 }
 
 function openEmp(id) {
@@ -1479,6 +1515,8 @@ function openEmp(id) {
   $('eS').value = e.estatus || 'Activo';
   $('eB').value = e.fechaBaja || '';
   $('ePw').value = '';
+  eFotoTemp = e.foto || '';
+  renderFotoModal();
   resetPwField('ePw', 'btnEyeEPw');
   $('ePwl').style.display = '';
   $('dlg').showModal();
@@ -1518,6 +1556,9 @@ function saveEmp(ev) {
     estatus: $('eS').value,
     fechaBaja: bj ? ($('eB').value || today()) : ''
   });
+
+  if (eFotoTemp) e.foto = eFotoTemp;
+  else delete e.foto;
 
   logAudit('Empleado guardado', 'Se registraron cambios para ' + e.nombre);
   save();
@@ -1576,7 +1617,8 @@ function del(col, id, b) {
 }
 
 // ---------- FOTO DE PERFIL (SUBIR O TOMAR CON CÁMARA) ----------
-function guardarFotoComprimida(src) {
+function guardarFotoComprimida(src, target) {
+  target = target || 'perfil';
   var img = new Image();
   img.onload = function() {
     var size = 320;
@@ -1588,10 +1630,18 @@ function guardarFotoComprimida(src) {
     var sx = (img.width - minSide) / 2;
     var sy = (img.height - minSide) / 2;
     ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+    var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+    if (target === 'modal') {
+      eFotoTemp = dataUrl;
+      renderFotoModal();
+      toast('Foto lista. Presiona Guardar para aplicar.');
+      return;
+    }
 
     var e = emp(PV);
     if (!e) return;
-    e.foto = canvas.toDataURL('image/jpeg', 0.82);
+    e.foto = dataUrl;
     if (save()) {
       logAudit('Foto de perfil', 'Actualizó foto de perfil de ' + e.nombre);
       toast('Foto de perfil actualizada');
@@ -1601,12 +1651,12 @@ function guardarFotoComprimida(src) {
   img.src = src;
 }
 
-function procesarFoto(input) {
+function procesarFoto(input, target) {
   var f = input.files && input.files[0];
   if (!f) return;
   var r = new FileReader();
   r.onload = function() {
-    guardarFotoComprimida(r.result);
+    guardarFotoComprimida(r.result, target || 'perfil');
     input.value = '';
   };
   r.readAsDataURL(f);
@@ -1621,24 +1671,39 @@ function quitarFoto() {
   rPerfil();
 }
 
-function abrirCamara() {
-  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    var camFallback = $('fotoCamFallback');
-    if (camFallback) camFallback.click();
-    return;
+function iniciarStreamCamara(abrirModal) {
+  if (camStream) {
+    camStream.getTracks().forEach(function(t) { t.stop(); });
+    camStream = null;
   }
-  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: camFacing }, audio: false })
     .then(function(stream) {
       camStream = stream;
       var v = $('camVideo');
+      v.style.transform = camFacing === 'user' ? 'scaleX(-1)' : 'none';
       v.srcObject = stream;
-      $('dlgCam').showModal();
+      if (abrirModal && !$('dlgCam').open) $('dlgCam').showModal();
     })
     .catch(function() {
       var camFallback = $('fotoCamFallback');
       if (camFallback) camFallback.click();
       else toast('No se pudo acceder a la cámara');
     });
+}
+
+function abrirCamara(target) {
+  camTarget = target || 'perfil';
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    var camFallback = $('fotoCamFallback');
+    if (camFallback) camFallback.click();
+    return;
+  }
+  iniciarStreamCamara(true);
+}
+
+function cambiarCamara() {
+  camFacing = camFacing === 'user' ? 'environment' : 'user';
+  iniciarStreamCamara(false);
 }
 
 function cerrarCamara() {
@@ -1657,12 +1722,15 @@ function capturarFoto() {
   c.width = v.videoWidth;
   c.height = v.videoHeight;
   var ctx = c.getContext('2d');
-  ctx.translate(c.width, 0);
-  ctx.scale(-1, 1);
+  if (camFacing === 'user') {
+    ctx.translate(c.width, 0);
+    ctx.scale(-1, 1);
+  }
   ctx.drawImage(v, 0, 0, c.width, c.height);
   var dataUrl = c.toDataURL('image/jpeg', 0.88);
+  var targetActual = camTarget;
   cerrarCamara();
-  guardarFotoComprimida(dataUrl);
+  guardarFotoComprimida(dataUrl, targetActual);
 }
 
 // ---------- VISTA: PERFIL DE EMPLEADO ----------
@@ -1698,11 +1766,11 @@ function rPerfil() {
       '<div class="pf-avatar-wrap">' +
         avatar(e, true) +
         '<div class="act" style="justify-content:center">' +
-          '<button class="btn g s" type="button" onclick="abrirCamara()" title="Tomar foto con cámara">📷 Tomar</button>' +
+          '<button class="btn g s" type="button" onclick="abrirCamara(\'perfil\')" title="Tomar foto con cámara">📷 Tomar</button>' +
           '<button class="btn g s" type="button" onclick="$(\'fotoFile\').click()" title="Subir imagen desde archivo">🖼️ Subir</button>' +
           (e.foto ? '<button class="btn g s" type="button" onclick="quitarFoto()" title="Quitar foto">✕</button>' : '') +
-          '<input type="file" id="fotoFile" accept="image/*" style="display:none" onchange="procesarFoto(this)">' +
-          '<input type="file" id="fotoCamFallback" accept="image/*" capture="user" style="display:none" onchange="procesarFoto(this)">' +
+          '<input type="file" id="fotoFile" accept="image/*" style="display:none" onchange="procesarFoto(this, \'perfil\')">' +
+          '<input type="file" id="fotoCamFallback" accept="image/*" capture="user" style="display:none" onchange="procesarFoto(this, camTarget)">' +
         '</div>' +
       '</div>' +
       '<div style="flex:1;min-width:200px"><h3 class="t">' + esc(e.nombre) + (e.estatus == 'Baja' ? ' <span class="tag bd">Baja</span>' : '') + '</h3><div class="d" style="margin:0">' + esc(e.puesto) + (e.pd && e.pd.fn ? ' · ' + anios(e.pd.fn) + ' años' : '') + ' · Ingreso ' + fmt(e.ingreso) + ' · Antigüedad ' + antig(e.ingreso) + ' · Horario ' + e.hEnt + ' – ' + e.hSal + '</div><div class="d" style="margin:2px 0 0">' + esc(e.tel || '') + ' ' + esc(e.email || '') + '</div></div>' +
