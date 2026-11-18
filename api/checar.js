@@ -6,7 +6,7 @@ module.exports = async function handler(req, res) {
   const SERVICE_KEY = (process.env.SUPABASE_SERVICE_ROLE_KEY || '').trim();
 
   if (!SUPABASE_URL || !SERVICE_KEY) {
-    return res.status(500).json({ error: 'Faltan variables de entorno en Vercel' });
+    return res.status(500).json({ error: 'Faltan variables SUPABASE_URL o SUPABASE_SERVICE_ROLE_KEY en Vercel' });
   }
 
   const headers = {
@@ -17,94 +17,137 @@ module.exports = async function handler(req, res) {
     headers.Authorization = `Bearer ${SERVICE_KEY}`;
   }
 
+  function horaConTolerancia(horaBase) {
+    const [h, m] = (horaBase || '09:00').split(':').map(Number);
+    const total = (h || 9) * 60 + (m || 0) + 10;
+    const hh = String(Math.floor(total / 60) % 24).padStart(2, '0');
+    const mm = String(total % 60).padStart(2, '0');
+    return `${hh}:${mm}`;
+  }
+
   try {
-    // Leer estado actual de datos_rh
     const rhRes = await fetch(`${SUPABASE_URL}/rest/v1/datos_rh?select=*&limit=1`, { headers });
     const rows = await rhRes.json();
     if (!rhRes.ok || !Array.isArray(rows) || !rows.length) {
-      return res.status(500).json({ error: 'No se pudo leer la tabla datos_rh' });
+      return res.status(500).json({ error: 'No se pudo leer la tabla datos_rh en Supabase' });
     }
 
     const fila = rows[0];
     const estado = fila.data || fila.datos || fila.estado || fila;
-    const empleados = Array.isArray(estado.empleados) ? estado.empleados : [];
+    const empleados = Array.isArray(estado.empleados)
+      ? estado.empleados
+      : Array.isArray(estado.emps)
+        ? estado.emps
+        : [];
 
-    // GET: Enviar lista básica de empleados al kiosco para validar IDs
+    // GET: Enviar empleados con el ID asignado por RH
     if (req.method === 'GET') {
       const lista = empleados.map((e) => ({
-        id: String(e.id || e.empId || e.codigo || ''),
+        id: String(e.codigo || e.id || ''),
         nombre: e.nombre || 'Colaborador',
         puesto: e.puesto || '',
-        depto: e.depto || e.departamento || '',
-        foto: e.foto || ''
+        horaEntrada: e.horaEntrada || e.entrada || '09:00'
       }));
       return res.status(200).json({ ok: true, empleados: lista });
     }
 
-    // POST: Registrar entrada o salida
+    // POST: Registrar entrada o salida desde el Kiosco
     if (req.method === 'POST') {
       const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
       const { empId, tipo, foto } = body;
 
       if (!empId || !tipo) {
-        return res.status(400).json({ error: 'Ingresa tu ID de empleado' });
+        return res.status(400).json({ error: 'Ingresa tu ID de empleado asignado por RH' });
       }
 
+      const buscado = String(empId).trim().toLowerCase();
       const emp = empleados.find(
-        (e) => String(e.id || e.empId || e.codigo || '').toLowerCase() === String(empId).trim().toLowerCase()
+        (e) =>
+          String(e.codigo || '').trim().toLowerCase() === buscado ||
+          String(e.id || '').trim().toLowerCase() === buscado
       );
+
       if (!emp) {
-        return res.status(404).json({ error: 'ID de empleado no encontrado' });
+        return res.status(404).json({ error: `El ID "${empId}" no existe. Verifica con Recursos Humanos.` });
       }
 
       const ahora = new Date();
-      // Hora local México (UTC-6)
-      const mx = new Date(ahora.getTime() - 6 * 60 * 60 * 1000);
-      const fecha = mx.toISOString().slice(0, 10);
-      const hora = mx.toISOString().slice(11, 16);
+      const fecha = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Mexico_City',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).format(ahora);
 
-      if (!Array.isArray(estado.asistencias)) estado.asistencias = [];
+      const hora = new Intl.DateTimeFormat('en-GB', {
+        timeZone: 'America/Mexico_City',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      }).format(ahora);
 
-      // Buscar si ya tiene registro hoy
-      let reg = estado.asistencias.find(
-        (a) => String(a.empId || a.empleadoId) === String(emp.id) && a.fecha === fecha
+      const listaAsis = Array.isArray(estado.asistencias)
+        ? estado.asistencias
+        : Array.isArray(estado.asis)
+          ? estado.asis
+          : (estado.asistencias = []);
+
+      const idInterno = emp.id || emp.codigo;
+      let reg = listaAsis.find(
+        (a) =>
+          (String(a.empId || a.empleadoId || a.eid) === String(idInterno) ||
+            String(a.codigoEmp || '') === String(emp.codigo || '')) &&
+          (a.fecha || a.f) === fecha
       );
 
+      const horaProgramada = emp.horaEntrada || emp.entrada || '09:00';
+      const limiteTolerancia = horaConTolerancia(horaProgramada);
+      const estatusCalculado = hora <= limiteTolerancia ? 'A tiempo' : 'Retardo';
+
       if (tipo === 'entrada') {
-        if (reg && reg.entrada) {
-          return res.status(400).json({ error: `${emp.nombre} ya registró entrada hoy a las ${reg.entrada}` });
+        if (reg && (reg.entrada || reg.i || reg.in)) {
+          return res.status(400).json({
+            error: `${emp.nombre} ya registró su entrada hoy a las ${reg.entrada || reg.i || reg.in}`
+          });
         }
-        const esRetardo = hora > '09:10'; // Tolerancia 9:10 AM
+
         const nuevoReg = {
           id: 'asi_' + Date.now(),
-          empId: emp.id,
+          empId: idInterno,
+          eid: idInterno,
+          codigoEmp: emp.codigo || idInterno,
           nombre: emp.nombre,
           fecha,
+          f: fecha,
           entrada: hora,
+          i: hora,
           salida: '',
-          estatus: esRetardo ? 'Retardo' : 'Puntual',
+          o: '',
+          estatus: estatusCalculado,
           fotoChecada: foto || '',
-          origen: 'Kiosco Checador'
+          origen: 'Terminal Checador'
         };
-        estado.asistencias.unshift(nuevoReg);
+        listaAsis.unshift(nuevoReg);
       } else if (tipo === 'salida') {
         if (!reg) {
-          return res.status(400).json({ error: `${emp.nombre} no tiene entrada registrada hoy` });
+          return res.status(400).json({ error: `${emp.nombre} aún no tiene entrada registrada hoy` });
+        }
+        if (reg.salida || reg.o) {
+          return res.status(400).json({ error: `${emp.nombre} ya registró salida hoy a las ${reg.salida || reg.o}` });
         }
         reg.salida = hora;
+        reg.o = hora;
         if (foto) reg.fotoSalida = foto;
       }
 
-      // Registrar en bitácora si existe
       if (Array.isArray(estado.auditoria)) {
         estado.auditoria.unshift({
           fecha: `${fecha} ${hora}`,
-          usuario: emp.nombre,
-          accion: `Checador Kiosco: ${tipo.toUpperCase()} (${hora})`
+          usuario: `${emp.nombre} (ID: ${emp.codigo || idInterno})`,
+          accion: `Checador: ${tipo.toUpperCase()} a las ${hora} (${estatusCalculado})`
         });
       }
 
-      // Guardar actualización en Supabase
       const columnaJson = fila.data ? 'data' : fila.datos ? 'datos' : fila.estado ? 'estado' : null;
       const payload = columnaJson ? { [columnaJson]: estado } : estado;
       if (typeof fila.version === 'number') payload.version = fila.version + 1;
@@ -117,15 +160,16 @@ module.exports = async function handler(req, res) {
       });
 
       if (!updRes.ok) {
-        return res.status(500).json({ error: 'Error al guardar la asistencia en Supabase' });
+        return res.status(500).json({ error: 'Error al guardar asistencia en Supabase' });
       }
 
       return res.status(200).json({
         ok: true,
         empleado: emp.nombre,
-        puesto: emp.puesto || '',
+        codigo: emp.codigo || idInterno,
         hora,
-        tipo
+        tipo,
+        estatus: estatusCalculado
       });
     }
 
