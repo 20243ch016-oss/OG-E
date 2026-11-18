@@ -1252,15 +1252,20 @@ function save() {
   }
 }
 
-function start(u) {
+function start(u, restaurar) {
   USER = u;
   ROL = u.rol;
   ME = u.emp || null;
-  PV = ME;
+  var pvGuardado = restaurar ? sessionStorage.getItem('oge.pv') : null;
+  PV = (ROL == 'rh' && pvGuardado) ? pvGuardado : ME;
+
+  try { localStorage.setItem('oge.session', JSON.stringify(u)); } catch (e) {}
 
   loadData().then(function() {
-    logAudit('Inicio de sesión', 'El usuario ' + u.email + ' ingresó al sistema.');
-    save();
+    if (!restaurar) {
+      logAudit('Inicio de sesión', 'El usuario ' + u.email + ' ingresó al sistema.');
+      save();
+    }
     $('login').style.display = 'none';
     $('appw').style.display = 'block';
     $('who').textContent = u.email;
@@ -1275,7 +1280,15 @@ function start(u) {
     nav();
     initInc();
     onVacTipo();
-    go(ROL == 'rh' ? 'inicio' : 'perfil');
+    var vistasValidas = ROL == 'rh'
+      ? ['inicio', 'personal', 'perfil', 'asistencia', 'vacaciones', 'incidencias', 'nominas', 'auditorias', 'reportes']
+      : ['perfil', 'vacaciones', 'incidencias', 'recibos', 'retro', 'notificaciones'];
+    var vistaGuardada = restaurar ? sessionStorage.getItem('oge.view') : null;
+    var vistaInicial = (vistaGuardada && vistasValidas.indexOf(vistaGuardada) > -1)
+      ? vistaGuardada
+      : (ROL == 'rh' ? 'inicio' : 'perfil');
+    if (vistaInicial == 'perfil' && ROL == 'rh' && !PV) vistaInicial = 'personal';
+    go(vistaInicial);
     conectarTiempoReal();
   });
 }
@@ -1335,6 +1348,11 @@ document.addEventListener('visibilitychange', function() {
 function logout() {
   cerrarCamara();
   resetPwField('lP', 'btnEyeLP');
+  try {
+    localStorage.removeItem('oge.session');
+    sessionStorage.removeItem('oge.view');
+    sessionStorage.removeItem('oge.pv');
+  } catch (e) {}
   (mode == 'cloud' ? sb.auth.signOut() : Promise.resolve()).then(function() {
     desconectarTiempoReal();
     USER = null;
@@ -1374,6 +1392,10 @@ function nav() {
 function go(v) {
   cur = v;
   if (v == 'perfil' && ROL != 'rh') PV = ME;
+  try {
+    sessionStorage.setItem('oge.view', v);
+    if (PV) sessionStorage.setItem('oge.pv', PV);
+  } catch (e) {}
   document.querySelectorAll('.view').forEach(function(x) { x.classList.toggle('on', x.id == v); });
   document.querySelectorAll('#links button').forEach(function(b) {
     b.classList.toggle('on', b.dataset.v == v || (v == 'perfil' && ROL == 'rh' && b.dataset.v == 'personal'));
@@ -1384,6 +1406,7 @@ function go(v) {
 
 function verPerfil(id) {
   PV = id;
+  try { sessionStorage.setItem('oge.pv', id); } catch (e) {}
   go('perfil');
 }
 
@@ -2543,9 +2566,38 @@ if (mode == 'cloud') {
     } catch (e) {}
   }
 
-  $('login').style.display = 'grid';
+  function mostrarLogin() {
+    $('appw').style.display = 'none';
+    $('login').style.display = 'grid';
+  }
+
+  $('login').style.display = 'none';
   $('appw').style.display = 'none';
+
+  if (mode == 'cloud' && sb) {
+    sb.auth.getSession().then(function(r) {
+      var ses = r && r.data && r.data.session;
+      if (!ses || !ses.user) return mostrarLogin();
+      return sb.from('perfiles').select('rol, emp_id').eq('user_id', ses.user.id).maybeSingle()
+        .then(function(pf) {
+          if (!pf || !pf.data) {
+            sb.auth.signOut();
+            return mostrarLogin();
+          }
+          start({ id: ses.user.id, email: ses.user.email, rol: pf.data.rol, emp: pf.data.emp_id }, true);
+        });
+    }).catch(mostrarLogin);
+  } else {
+    var guardada = null;
+    try { guardada = JSON.parse(localStorage.getItem('oge.session')); } catch (e) {}
+    if (guardada && guardada.email) {
+      start(guardada, true);
+    } else {
+      mostrarLogin();
+    }
+  }
 })();
 </script>
 </body>
 </html>
+Analizando
