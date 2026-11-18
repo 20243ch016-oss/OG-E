@@ -14,7 +14,6 @@
       --text: #f8fafc;
       --muted: #94a3b8;
       --ok: #10b981;
-      --warn: #f59e0b;
       --err: #ef4444;
     }
     * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -28,7 +27,10 @@
       display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
     }
     @media (max-width: 720px) { .kiosk { grid-template-columns: 1fr; } }
-    .header { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: 14px; }
+    .header {
+      grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: 14px;
+    }
     .brand { font-size: 1.4rem; font-weight: 800; letter-spacing: .5px; }
     .brand span { color: #a78bfa; }
     .clock { text-align: right; }
@@ -40,13 +42,13 @@
     }
     video, canvas { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
     .cam-badge {
-      position: absolute; bottom: 10px; left: 10px; background: rgba(18,39,76,.85);
+      position: absolute; bottom: 10px; left: 10px; background: rgba(18,39,76,.88);
       padding: 5px 10px; border-radius: 99px; font-size: .75rem; display: flex; align-items: center; gap: 6px;
     }
     .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: pulse 1.5s infinite; }
     @keyframes pulse { 50% { opacity: .3; } }
     .controls { display: flex; flex-direction: column; gap: 12px; }
-    label { font-size: .85rem; color: var(--muted); font-weight: 600; }
+    label { font-size: .85rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px; }
     input, select {
       width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15);
       background: #0b1324; color: #fff; font-size: 1.1rem; outline: none;
@@ -78,7 +80,7 @@
 <body>
   <div class="kiosk">
     <div class="header">
-      <div class="brand">OG<span>-E</span> · Control de Asistencia</div>
+      <div class="brand">OG<span>-E</span> · Terminal Checador</div>
       <div class="clock">
         <div class="time" id="reloj">00:00:00</div>
         <div class="date" id="fecha">Cargando fecha...</div>
@@ -89,16 +91,16 @@
       <div class="cam-box">
         <video id="video" autoplay playsinline muted></video>
         <canvas id="canvas" style="display:none;"></canvas>
-        <div class="cam-badge"><span class="dot"></span> Evidencia visual activa</div>
+        <div class="cam-badge"><span class="dot"></span> Captura fotográfica activa</div>
       </div>
       <p style="font-size:.8rem; color:var(--muted); margin:8px 0 0;">
-        Al registrar entrada o salida se captura automáticamente una fotografía como respaldo de asistencia.
+        Ingresa el ID asignado por Recursos Humanos. Al marcar entrada o salida se toma una foto automática como respaldo.
       </p>
     </div>
 
     <div class="controls">
       <div>
-        <label>Selección rápida (o escribe tu ID abajo)</label>
+        <label>Directorio rápido (o teclea tu ID abajo)</label>
         <select id="listaEmp" onchange="document.getElementById('empId').value = this.value">
           <option value="">Cargando colaboradores...</option>
         </select>
@@ -106,27 +108,27 @@
 
       <div>
         <label>ID de Colaborador</label>
-        <input type="text" id="empId" placeholder="Ej. EMP-01 o 1" autocomplete="off" />
+        <input type="text" id="empId" placeholder="Ej. 101" autocomplete="off" />
       </div>
 
       <div class="keypad">
-        <button class="key" onclick="addKey('1')">1</button>
-        <button class="key" onclick="addKey('2')">2</button>
-        <button class="key" onclick="addKey('3')">3</button>
-        <button class="key" onclick="addKey('4')">4</button>
-        <button class="key" onclick="addKey('5')">5</button>
-        <button class="key" onclick="addKey('6')">6</button>
-        <button class="key" onclick="addKey('7')">7</button>
-        <button class="key" onclick="addKey('8')">8</button>
-        <button class="key" onclick="addKey('9')">9</button>
-        <button class="key" onclick="clearKey()">Borrar</button>
-        <button class="key" onclick="addKey('0')">0</button>
-        <button class="key" onclick="delKey()">⌫</button>
+        <button class="key" type="button" onclick="addKey('1')">1</button>
+        <button class="key" type="button" onclick="addKey('2')">2</button>
+        <button class="key" type="button" onclick="addKey('3')">3</button>
+        <button class="key" type="button" onclick="addKey('4')">4</button>
+        <button class="key" type="button" onclick="addKey('5')">5</button>
+        <button class="key" type="button" onclick="addKey('6')">6</button>
+        <button class="key" type="button" onclick="addKey('7')">7</button>
+        <button class="key" type="button" onclick="addKey('8')">8</button>
+        <button class="key" type="button" onclick="addKey('9')">9</button>
+        <button class="key" type="button" onclick="clearKey()">Borrar</button>
+        <button class="key" type="button" onclick="addKey('0')">0</button>
+        <button class="key" type="button" onclick="delKey()">⌫</button>
       </div>
 
       <div class="actions">
-        <button class="btn btn-in" id="btnIn" onclick="registrar('entrada')">🟢 Entrada</button>
-        <button class="btn btn-out" id="btnOut" onclick="registrar('salida')">🟣 Salida</button>
+        <button class="btn btn-in" type="button" id="btnIn" onclick="registrar('entrada')">🟢 Entrada</button>
+        <button class="btn btn-out" type="button" id="btnOut" onclick="registrar('salida')">🟣 Salida</button>
       </div>
     </div>
 
@@ -134,7 +136,8 @@
   </div>
 
   <script>
-    // 1. Reloj en tiempo real
+    let resetTimer = null;
+
     function actualizarReloj() {
       const ahora = new Date();
       document.getElementById('reloj').textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
@@ -145,22 +148,22 @@
     setInterval(actualizarReloj, 1000);
     actualizarReloj();
 
-    // 2. Encender cámara
     const video = document.getElementById('video');
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 480 } })
-      .then((stream) => { video.srcObject = stream; })
-      .catch(() => { console.warn('Cámara no disponible, se registrará sin foto.'); });
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 480 } })
+        .then((stream) => { video.srcObject = stream; })
+        .catch(() => { console.warn('Sin acceso a cámara; se registrará solo con ID y hora.'); });
+    }
 
-    // 3. Cargar empleados desde OG-E
     fetch('/api/checar')
       .then((r) => r.json())
       .then((data) => {
         const sel = document.getElementById('listaEmp');
         if (data.ok && data.empleados.length) {
           sel.innerHTML = '<option value="">-- Selecciona un colaborador --</option>' +
-            data.empleados.map((e) => `<option value="${e.id}">${e.id} · ${e.nombre}</option>`).join('');
+            data.empleados.map((e) => `<option value="${e.id}">ID ${e.id} · ${e.nombre}</option>`).join('');
         } else {
-          sel.innerHTML = '<option value="">Escribe el ID manualmente</option>';
+          sel.innerHTML = '<option value="">Escribe tu ID manualmente</option>';
         }
       })
       .catch(() => {});
@@ -187,15 +190,17 @@
     async function registrar(tipo) {
       const empId = document.getElementById('empId').value.trim();
       const status = document.getElementById('status');
+      if (resetTimer) clearTimeout(resetTimer);
+
       if (!empId) {
         status.className = 'status err';
-        status.textContent = '⚠️ Ingresa o selecciona un ID de colaborador primero.';
+        status.style.display = 'block';
+        status.textContent = '⚠️ Ingresa el ID asignado por Recursos Humanos.';
         return;
       }
 
       document.getElementById('btnIn').disabled = true;
       document.getElementById('btnOut').disabled = true;
-      status.className = 'status';
       status.style.display = 'none';
 
       try {
@@ -207,16 +212,19 @@
         });
         const data = await res.json();
 
+        status.style.display = 'block';
         if (!res.ok || !data.ok) {
           status.className = 'status err';
           status.textContent = '❌ ' + (data.error || 'No se pudo registrar');
         } else {
           status.className = 'status ok';
-          status.textContent = `✅ ${tipo.toUpperCase()} registrada para ${data.empleado} a las ${data.hora} hrs`;
+          status.textContent = `✅ ${tipo.toUpperCase()} registrada · ${data.empleado} (ID ${data.codigo}) · ${data.hora} hrs · ${data.estatus}`;
           document.getElementById('empId').value = '';
           document.getElementById('listaEmp').value = '';
+          resetTimer = setTimeout(() => { status.style.display = 'none'; }, 4500);
         }
       } catch (e) {
+        status.style.display = 'block';
         status.className = 'status err';
         status.textContent = '❌ Error de conexión con el servidor.';
       } finally {
