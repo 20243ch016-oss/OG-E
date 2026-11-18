@@ -1,237 +1,2551 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>OG-E | Terminal Checador</title>
-  <style>
-    :root {
-      --navy: #12274c;
-      --purple: #6d28d9;
-      --purple-light: #7c3aed;
-      --bg: #0b1324;
-      --card: #131f38;
-      --text: #f8fafc;
-      --muted: #94a3b8;
-      --ok: #10b981;
-      --err: #ef4444;
-    }
-    * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-    body {
-      margin: 0; min-height: 100vh; background: radial-gradient(circle at top, #1b2f59, var(--bg));
-      color: var(--text); display: flex; align-items: center; justify-content: center; padding: 16px;
-    }
-    .kiosk {
-      width: 100%; max-width: 880px; background: var(--card); border: 1px solid rgba(255,255,255,.1);
-      border-radius: 20px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,.45);
-      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
-    }
-    @media (max-width: 720px) { .kiosk { grid-template-columns: 1fr; } }
-    .header {
-      grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center;
-      border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: 14px;
-    }
-    .brand { font-size: 1.4rem; font-weight: 800; letter-spacing: .5px; }
-    .brand span { color: #a78bfa; }
-    .clock { text-align: right; }
-    .clock .time { font-size: 2rem; font-weight: 700; font-variant-numeric: tabular-nums; }
-    .clock .date { font-size: .85rem; color: var(--muted); text-transform: capitalize; }
-    .cam-box {
-      position: relative; background: #070d19; border-radius: 14px; overflow: hidden;
-      aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(124,58,237,.4);
-    }
-    video, canvas { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
-    .cam-badge {
-      position: absolute; bottom: 10px; left: 10px; background: rgba(18,39,76,.88);
-      padding: 5px 10px; border-radius: 99px; font-size: .75rem; display: flex; align-items: center; gap: 6px;
-    }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ok); animation: pulse 1.5s infinite; }
-    @keyframes pulse { 50% { opacity: .3; } }
-    .controls { display: flex; flex-direction: column; gap: 12px; }
-    label { font-size: .85rem; color: var(--muted); font-weight: 600; display: block; margin-bottom: 4px; }
-    input, select {
-      width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(255,255,255,.15);
-      background: #0b1324; color: #fff; font-size: 1.1rem; outline: none;
-    }
-    input:focus, select:focus { border-color: var(--purple-light); }
-    .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-    .key {
-      padding: 12px; border: none; border-radius: 10px; background: rgba(255,255,255,.07);
-      color: #fff; font-size: 1.15rem; font-weight: 600; cursor: pointer; transition: .15s;
-    }
-    .key:hover { background: rgba(124,58,237,.35); }
-    .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
-    .btn {
-      padding: 14px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 700;
-      cursor: pointer; color: #fff; transition: transform .1s, opacity .2s;
-    }
-    .btn:active { transform: scale(.98); }
-    .btn:disabled { opacity: .5; cursor: not-allowed; }
-    .btn-in { background: linear-gradient(135deg, #059669, #10b981); }
-    .btn-out { background: linear-gradient(135deg, var(--purple), var(--purple-light)); }
-    .status {
-      grid-column: 1 / -1; padding: 14px; border-radius: 12px; text-align: center;
-      font-weight: 600; display: none;
-    }
-    .status.ok { display: block; background: rgba(16,185,129,.15); border: 1px solid var(--ok); color: #6ee7b7; }
-    .status.err { display: block; background: rgba(239,68,68,.15); border: 1px solid var(--err); color: #fca5a5; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#12274c">
+<title>OG-E — Organiza el talento, optimiza el futuro.</title>
+<style>
+:root {
+  --bg: #f3f4fa;
+  --surface: #ffffff;
+  --surface2: #ebeef8;
+  --text: #10203f;
+  --muted: #52607a;
+  --line: #dce1f0;
+  --navy: #12274c;
+  --navy2: #1c396e;
+  --brand: #6d28d9;
+  --brand2: #7c3aed;
+  --brandsoft: #ede9fe;
+  --warn: #b45309;
+  --warnsoft: #fef0d6;
+  --bad: #b91c1c;
+  --badsoft: #fde2e2;
+  --ok: #15803d;
+  --oksoft: #dcf5e3;
+  --shadow: 0 8px 28px rgba(18, 39, 76, 0.09);
+  --onbrand: #ffffff;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #070b14;
+    --surface: #0f1626;
+    --surface2: #162038;
+    --text: #eef2ff;
+    --muted: #93a1c2;
+    --line: #233052;
+    --navy: #183263;
+    --navy2: #224485;
+    --brand: #a78bfa;
+    --brand2: #7c3aed;
+    --brandsoft: #231747;
+    --warn: #fbbf24;
+    --warnsoft: #3a2d10;
+    --bad: #f87171;
+    --badsoft: #3b1717;
+    --ok: #4ade80;
+    --oksoft: #12301d;
+    --shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+    --onbrand: #ffffff;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #070b14;
+  --surface: #0f1626;
+  --surface2: #162038;
+  --text: #eef2ff;
+  --muted: #93a1c2;
+  --line: #233052;
+  --navy: #183263;
+  --navy2: #224485;
+  --brand: #a78bfa;
+  --brand2: #7c3aed;
+  --brandsoft: #231747;
+  --warn: #fbbf24;
+  --warnsoft: #3a2d10;
+  --bad: #f87171;
+  --badsoft: #3b1717;
+  --ok: #4ade80;
+  --oksoft: #12301d;
+  --shadow: 0 8px 28px rgba(0, 0, 0, 0.55);
+  --onbrand: #ffffff;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; line-height: 1.5; }
+
+/* Login */
+#login { min-height: 100vh; display: grid; grid-template-columns: 1.1fr 1fr; }
+.lh {
+  background:
+    radial-gradient(circle at 18% 18%, rgba(124, 58, 237, 0.45) 0, transparent 48%),
+    radial-gradient(circle at 85% 85%, rgba(109, 40, 217, 0.35) 0, transparent 45%),
+    linear-gradient(145deg, #060a12, #12274c 58%, #3b1678);
+  color: #fff;
+  padding: 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 18px;
+}
+.lh h1 { font-size: clamp(2rem, 4.2vw, 3.1rem); line-height: 1.12; margin: 0; letter-spacing: -0.02em; }
+.lh h1 span { color: #c4b5fd; }
+.lh p { margin: 0; opacity: 0.88; max-width: 440px; font-size: 1.05rem; }
+.lh ul { list-style: none; padding: 0; margin: 8px 0 0; display: grid; gap: 10px; }
+.lh li { background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(167, 139, 250, 0.28); padding: 10px 14px; border-radius: 12px; max-width: 390px; backdrop-filter: blur(4px); }
+.logo { display: flex; align-items: center; gap: 11px; font-weight: 900; font-size: 1.25rem; letter-spacing: 0.02em; }
+.logo-badge {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0c1933, #183263);
+  border: 1px solid rgba(167, 139, 250, 0.45);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(109, 40, 217, 0.3);
+}
+.logo-sub { display: block; font-size: 0.68rem; font-weight: 600; opacity: 0.8; letter-spacing: 0.06em; text-transform: uppercase; margin-top: -2px; }
+.lf { display: flex; flex-direction: column; justify-content: center; padding: 40px; max-width: 460px; width: 100%; margin: 0 auto; gap: 14px; }
+.lf h2 { margin: 0; font-size: 1.7rem; color: var(--text); }
+.tabs { display: flex; background: var(--surface2); border-radius: 12px; padding: 4px; }
+.tabs button { flex: 1; border: 0; background: transparent; color: var(--muted); font: inherit; font-weight: 700; padding: 9px; border-radius: 9px; cursor: pointer; }
+.tabs button.on { background: var(--surface); color: var(--brand); box-shadow: 0 2px 8px rgba(18, 39, 76, 0.12); }
+#msg { font-size: 0.86rem; min-height: 1.2em; color: var(--bad); }
+#msg.g { color: var(--ok); }
+.hint { font-size: 0.78rem; color: var(--muted); background: var(--surface2); padding: 10px 12px; border-radius: 10px; border-left: 3px solid var(--brand2); }
+
+/* Campo de contraseña con botón mostrar/ocultar */
+.pw-wrap { position: relative; display: flex; align-items: center; }
+.pw-wrap input { width: 100%; padding-right: 42px; }
+.pw-eye {
+  position: absolute;
+  right: 7px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  transition: color 0.15s, background 0.15s;
+}
+.pw-eye:hover { color: var(--brand); background: var(--surface2); }
+
+/* App */
+#appw { display: none; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 16px 30px; }
+header.top { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; gap: 10px; flex-wrap: wrap; }
+.pill { font-size: 0.74rem; padding: 5px 11px; border-radius: 99px; background: var(--brandsoft); color: var(--brand); font-weight: 700; }
+.who { font-size: 0.85rem; color: var(--muted); }
+.app { display: grid; grid-template-columns: 205px 1fr; gap: 16px; align-items: start; }
+.side { background: linear-gradient(180deg, #0b162c, #12274c); border-radius: 20px; padding: 14px 10px; display: flex; flex-direction: column; gap: 4px; box-shadow: var(--shadow); position: sticky; top: 12px; }
+.side button { all: unset; cursor: pointer; padding: 11px 13px; border-radius: 12px; color: rgba(255, 255, 255, 0.72); font-weight: 600; font-size: 0.92rem; }
+.side button:hover { background: rgba(124, 58, 237, 0.22); color: #fff; }
+.side button.on { background: linear-gradient(135deg, rgba(124, 58, 237, 0.45), rgba(18, 39, 76, 0.6)); color: #fff; }
+.main { min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 24px; box-shadow: var(--shadow); min-height: 560px; }
+.view { display: none; }
+.view.on { display: block; }
+h3.t { margin: 0 0 2px; font-size: 1.4rem; }
+p.d { margin: 0 0 18px; color: var(--muted); font-size: 0.9rem; }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 12px; margin-bottom: 16px; }
+.kpi { background: var(--surface2); border-radius: 14px; padding: 14px 16px; border-left: 4px solid var(--brand2); }
+.kpi:nth-child(2) { border-color: var(--bad); }
+.kpi:nth-child(3) { border-color: var(--warn); }
+.kpi:nth-child(4) { border-color: var(--navy2); }
+.kpi b { display: block; font-size: 1.9rem; line-height: 1.1; }
+.kpi small { color: var(--muted); }
+.grid2 { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; }
+.box { background: var(--surface2); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+.box h4 { margin: 0 0 10px; font-size: 0.95rem; }
+.bars { display: flex; align-items: flex-end; gap: 10px; height: 140px; }
+.bars div { flex: 1; text-align: center; font-size: 0.72rem; color: var(--muted); display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+.bars span { display: block; border-radius: 8px 8px 0 0; background: linear-gradient(180deg, var(--brand2), var(--navy)); margin-bottom: 6px; min-height: 2px; }
+ul.list { list-style: none; margin: 0; padding: 0; }
+ul.list li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 0.9rem; }
+ul.list li:last-child { border: 0; }
+.tag { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; border: 0; font-family: inherit; }
+.ok { background: var(--oksoft); color: var(--ok); }
+.wa { background: var(--warnsoft); color: var(--warn); }
+.bd { background: var(--badsoft); color: var(--bad); }
+.in { background: var(--brandsoft); color: var(--brand); }
+button.tag { cursor: pointer; }
+.tw { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 560px; }
+th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px; border-bottom: 1px solid var(--line); }
+td { padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+tr:hover td { background: var(--surface2); }
+.av { display: inline-grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--navy), var(--brand2)); color: #fff; font-weight: 800; font-size: 0.78rem; margin-right: 8px; vertical-align: middle; overflow: hidden; }
+img.av { object-fit: cover; display: inline-block; border: 2px solid var(--brand2); }
+.prog { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.prog i { display: block; height: 100%; background: linear-gradient(90deg, var(--navy2), var(--brand2)); }
+.bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; }
+label { display: flex; flex-direction: column; font-size: 0.76rem; color: var(--muted); font-weight: 600; gap: 3px; }
+input, select, textarea { font: inherit; font-size: 0.9rem; padding: 10px 11px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--text); min-width: 0; }
+input:focus, select:focus, textarea:focus { outline: 2px solid var(--brand2); }
+.btn { font: inherit; font-weight: 700; font-size: 0.9rem; padding: 11px 18px; border-radius: 10px; border: 0; cursor: pointer; background: linear-gradient(135deg, #12274c, #6d28d9); color: #fff; transition: filter 0.15s; }
+.btn:hover { filter: brightness(1.08); }
+.btn.g { background: transparent; color: var(--text); border: 1px solid var(--line); }
+.btn.g:hover { background: var(--surface2); }
+.btn.s { padding: 5px 10px; font-size: 0.78rem; }
+.act { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.empty { text-align: center; color: var(--muted); padding: 28px 10px; font-size: 0.92rem; }
+dialog { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); color: var(--text); padding: 22px; width: min(450px, 92vw); box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(7, 11, 20, 0.65); }
+dialog form { display: grid; gap: 12px; }
+dialog h3 { margin: 0; }
+#toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: #12274c; color: #fff; border: 1px solid rgba(167, 139, 250, 0.4); padding: 10px 18px; border-radius: 99px; font-size: 0.88rem; opacity: 0; pointer-events: none; transition: opacity 0.25s; z-index: 20; }
+#toast.on { opacity: 1; }
+
+.rules-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.rule-card { background: var(--surface); border: 1px solid var(--line); border-top: 3px solid var(--brand2); border-radius: 12px; padding: 11px 13px; font-size: 0.82rem; }
+.rule-card strong { display: block; color: var(--brand); margin-bottom: 3px; font-size: 0.86rem; }
+.pf-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+#camVideo { width: 100%; border-radius: 12px; background: #000; transform: scaleX(-1); max-height: 320px; object-fit: cover; }
+
+@media (max-width: 820px) {
+  #login { grid-template-columns: 1fr; }
+  .lh { padding: 32px 24px; }
+  .lf { padding: 28px 20px; }
+  .app { grid-template-columns: 1fr; }
+  .side { flex-direction: row; overflow-x: auto; position: static; }
+  .side button { white-space: nowrap; }
+  .grid2 { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+}
+
+.nav { position: sticky; top: 0; z-index: 10; background: linear-gradient(90deg, #091224, #12274c 55%, #4c1d95); color: #fff; box-shadow: 0 4px 18px rgba(7, 11, 20, 0.28); border-bottom: 1px solid rgba(167, 139, 250, 0.25); }
+.nav .in { max-width: 1200px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 14px; }
+.links { display: flex; gap: 4px; flex: 1; overflow-x: auto; }
+.links button { border: 0; background: transparent; color: rgba(255, 255, 255, 0.78); font: inherit; font-weight: 600; font-size: 0.9rem; padding: 9px 14px; border-radius: 10px; cursor: pointer; white-space: nowrap; }
+.links button:hover { background: rgba(124, 58, 237, 0.28); color: #fff; }
+.links button.on { background: rgba(124, 58, 237, 0.45); color: #fff; box-shadow: inset 0 0 0 1px rgba(196, 181, 253, 0.35); }
+.links .ic { margin-right: 6px; }
+.um { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; }
+.um .pill { background: rgba(124, 58, 237, 0.35); color: #e9d5ff; border: 1px solid rgba(196, 181, 253, 0.3); }
+.um .who { color: #fff; opacity: 0.88; }
+.nav .btn.g { color: #fff; border-color: rgba(196, 181, 253, 0.4); }
+.nav .btn.g:hover { background: rgba(255, 255, 255, 0.12); }
+.page { max-width: 1200px; margin: 0 auto; padding: 18px 16px 40px; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.lk { cursor: pointer; }
+.lk:hover { color: var(--brand); }
+.lnk { color: var(--text); font-weight: 700; text-decoration: none; }
+.lnk:hover { color: var(--brand); }
+.phead { display: flex; align-items: center; gap: 16px; margin: 12px 0 14px; flex-wrap: wrap; }
+.av.big { width: 78px; height: 78px; font-size: 1.45rem; margin: 0; }
+
+@media (max-width: 820px) {
+  .links { position: fixed; left: 0; right: 0; bottom: 0; background: #091224; border-top: 1px solid rgba(167, 139, 250, 0.25); padding: 6px 6px calc(6px + env(safe-area-inset-bottom, 0px)); justify-content: space-around; z-index: 15; overflow: visible; }
+  .links button { display: flex; flex-direction: column; align-items: center; font-size: 0.66rem; padding: 6px; gap: 2px; flex: 1; }
+  .links .ic { margin: 0; font-size: 1.15rem; }
+  .page { padding-bottom: 96px; }
+  .um .who, .nav .lt { display: none; }
+  .nav .in { justify-content: space-between; }
+  #toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+}
+
+.fg { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.kvs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.kv small { display: block; color: var(--muted); font-size: 0.74rem; font-weight: 600; }
+.kv b { font-weight: 600; word-break: break-word; }
+.hr { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+.hr h4 { margin: 0; }
+dialog h4 { margin: 8px 0 0; color: var(--brand); }
+
+@media (max-width: 560px) {
+  .fg { grid-template-columns: 1fr; }
+}
+</style>
+<script>
+/* ====== CONFIGURACIÓN DE BASE DE DATOS (Supabase) ====== */
+window.RH_CONFIG = { url: "https://dyuoduqllenptsmwnfqx.supabase.co", key: "sb_publishable_SIIPZTqd_KCFMmD80-gtgA_LxKq1aTf" };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 </head>
 <body>
-  <div class="kiosk">
-    <div class="header">
-      <div class="brand">OG<span>-E</span> · Terminal Checador</div>
-      <div class="clock">
-        <div class="time" id="reloj">00:00:00</div>
-        <div class="date" id="fecha">Cargando fecha...</div>
-      </div>
-    </div>
 
-    <div>
-      <div class="cam-box">
-        <video id="video" autoplay playsinline muted></video>
-        <canvas id="canvas" style="display:none;"></canvas>
-        <div class="cam-badge"><span class="dot"></span> Captura fotográfica activa</div>
+<section id="login">
+  <div class="lh">
+    <div class="logo">
+      <div class="logo-badge">
+        <svg width="26" height="26" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="18" cy="11" r="4.5" fill="#93c5fd"/>
+          <circle cx="10.5" cy="13" r="3.2" fill="#60a5fa"/>
+          <circle cx="25.5" cy="13" r="3.2" fill="#60a5fa"/>
+          <rect x="8" y="18" width="20" height="13" rx="3" fill="#1e3a8a" stroke="#93c5fd" stroke-width="1.5"/>
+          <rect x="11" y="21" width="3.5" height="2.8" rx="0.7" fill="#c7d2fe"/>
+          <rect x="16.2" y="21" width="3.5" height="2.8" rx="0.7" fill="#c7d2fe"/>
+          <rect x="21.5" y="21" width="3.5" height="2.8" rx="0.7" fill="#c7d2fe"/>
+          <rect x="11" y="25.5" width="3.5" height="2.8" rx="0.7" fill="#c7d2fe"/>
+          <path d="M16 26.8L17.6 28.4L20.4 25.3" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M26 7C31.5 11.5 31.5 22.5 25 28" stroke="#9333ea" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M9 29C4.5 25 4.5 15 9.5 9.5" stroke="#9333ea" stroke-width="2.4" stroke-linecap="round"/>
+        </svg>
       </div>
-      <p style="font-size:.8rem; color:var(--muted); margin:8px 0 0;">
-        Ingresa el ID asignado por Recursos Humanos. Al marcar entrada o salida se toma una foto automática como respaldo.
-      </p>
-    </div>
-
-    <div class="controls">
       <div>
-        <label>Directorio rápido (o teclea tu ID abajo)</label>
-        <select id="listaEmp" onchange="document.getElementById('empId').value = this.value">
-          <option value="">Cargando colaboradores...</option>
-        </select>
-      </div>
-
-      <div>
-        <label>ID de Colaborador</label>
-        <input type="text" id="empId" placeholder="Ej. 101" autocomplete="off" />
-      </div>
-
-      <div class="keypad">
-        <button class="key" type="button" onclick="addKey('1')">1</button>
-        <button class="key" type="button" onclick="addKey('2')">2</button>
-        <button class="key" type="button" onclick="addKey('3')">3</button>
-        <button class="key" type="button" onclick="addKey('4')">4</button>
-        <button class="key" type="button" onclick="addKey('5')">5</button>
-        <button class="key" type="button" onclick="addKey('6')">6</button>
-        <button class="key" type="button" onclick="addKey('7')">7</button>
-        <button class="key" type="button" onclick="addKey('8')">8</button>
-        <button class="key" type="button" onclick="addKey('9')">9</button>
-        <button class="key" type="button" onclick="clearKey()">Borrar</button>
-        <button class="key" type="button" onclick="addKey('0')">0</button>
-        <button class="key" type="button" onclick="delKey()">⌫</button>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-in" type="button" id="btnIn" onclick="registrar('entrada')">🟢 Entrada</button>
-        <button class="btn btn-out" type="button" id="btnOut" onclick="registrar('salida')">🟣 Salida</button>
+        <span>OG<span style="color:#a855f7">-</span>E</span>
+        <span class="logo-sub">Software de Recursos Humanos</span>
       </div>
     </div>
-
-    <div class="status" id="status"></div>
+    <h1>Organiza el talento,<br><span>optimiza el futuro.</span></h1>
+    <p>Expedientes, asistencia, permisos, recibos de nómina y retroalimentación de tu personal en un solo lugar.</p>
+    <ul>
+      <li>🗂️ Expedientes digitales y foto de perfil</li>
+      <li>⏱️ Control de asistencia con terminal checador</li>
+      <li>📄 Recibos de nómina y reportes administrativos</li>
+    </ul>
   </div>
+  <form class="lf" onsubmit="doAuth(event)">
+    <h2>Bienvenido</h2>
+    <div class="tabs">
+      <button type="button" class="on" id="t0" onclick="tabAuth(false)">Entrar</button>
+      <button type="button" id="t1" onclick="tabAuth(true)">Crear cuenta RH</button>
+    </div>
+    <label>Usuario (correo electrónico)
+      <input id="lE" type="email" autocomplete="username" required placeholder="tu@empresa.com">
+    </label>
+    <label>Contraseña
+      <div class="pw-wrap">
+        <input id="lP" type="password" autocomplete="current-password" required minlength="6" placeholder="Mínimo 6 caracteres">
+        <button type="button" class="pw-eye" id="btnEyeLP" onclick="togglePw('lP', this)" title="Mostrar contraseña" aria-label="Mostrar contraseña">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </label>
+    <button class="btn" id="aBtn" type="submit">Entrar</button>
+    <div id="msg"></div>
+    <div class="hint" id="hint"></div>
+  </form>
+</section>
 
-  <script>
-    let resetTimer = null;
+<div id="appw">
+  <header class="nav">
+    <div class="in">
+      <div class="logo">
+        <div class="logo-badge" style="width:36px;height:36px;border-radius:10px">
+          <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="18" cy="11" r="4.5" fill="#93c5fd"/>
+            <circle cx="10.5" cy="13" r="3.2" fill="#60a5fa"/>
+            <circle cx="25.5" cy="13" r="3.2" fill="#60a5fa"/>
+            <rect x="8" y="18" width="20" height="13" rx="3" fill="#1e3a8a" stroke="#93c5fd" stroke-width="1.5"/>
+            <path d="M15.5 25L17.5 27L21 23" stroke="#c084fc" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M26 7C31.5 11.5 31.5 22.5 25 28" stroke="#a855f7" stroke-width="2.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span class="lt">OG<span style="color:#c084fc">-</span>E</span>
+      </div>
+      <nav class="links" id="links"></nav>
+      <div class="um">
+        <span class="pill" id="rolp"></span>
+        <span class="who" id="who"></span>
+        <button class="btn g s" onclick="logout()">Salir</button>
+      </div>
+    </div>
+  </header>
+  
+  <div class="page">
+    <div class="main">
 
-    function actualizarReloj() {
-      const ahora = new Date();
-      document.getElementById('reloj').textContent = ahora.toLocaleTimeString('es-MX', { hour12: false });
-      document.getElementById('fecha').textContent = ahora.toLocaleDateString('es-MX', {
-        weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
+      <div class="view on" id="inicio">
+        <h3 class="t">Resumen de hoy</h3>
+        <p class="d" id="hoy"></p>
+        <div class="kpis" id="kpis"></div>
+        <div class="grid2">
+          <div class="box">
+            <h4>Asistencia de los últimos 5 días</h4>
+            <div class="bars" id="bars"></div>
+          </div>
+          <div class="box">
+            <h4>Pendientes</h4>
+            <ul class="list" id="pend"></ul>
+          </div>
+        </div>
+        <div class="box">
+          <h4>Herramientas</h4>
+          <div class="act">
+            <button class="btn g s" onclick="reset(this)">Borrar todo</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="view" id="personal">
+        <h3 class="t">Personal</h3>
+        <p class="d">Toca el nombre de un empleado para abrir su expediente y foto de perfil.</p>
+        <div class="bar">
+          <label>Buscar<input id="q" placeholder="ID, nombre o puesto" oninput="rPers()"></label>
+          <label>Mostrar
+            <select id="pS" onchange="rPers()">
+              <option>Activos</option>
+              <option>Todos</option>
+            </select>
+          </label>
+          <button class="btn" onclick="openEmp()">+ Nuevo empleado</button>
+        </div>
+        <div class="tw" id="tPers"></div>
+      </div>
+
+      <div class="view" id="perfil">
+        <div id="pf"></div>
+      </div>
+
+      <div class="view" id="asistencia">
+        <h3 class="t">Asistencia</h3>
+        <p class="d">Se calcula sola con la hora de entrada de cada empleado: <b>A tiempo</b> hasta 10 minutos después de su hora, <b>Retardo</b> después de eso, y <b>Falta</b> si no hay entrada ni salida.</p>
+        <div class="bar">
+          <label>Fecha<input type="date" id="aF" onchange="rAsis()"></label>
+          <label>Empleado<select id="aE"></select></label>
+          <label>Entrada<input type="time" id="aI"></label>
+          <label>Salida<input type="time" id="aO"></label>
+          <button class="btn" onclick="addAsis()">Guardar</button>
+          <button class="btn g" onclick="marcarFaltas()">Marcar faltas de quien no registró</button>
+          <a href="/checador.html" target="_blank" class="btn" style="text-decoration:none">🖥️ Abrir Checador</a>
+          <button class="btn g" type="button" onclick="pendiente=true;revisarCambios();toast('Sincronizando...')">🔄 Actualizar</button>
+        </div>
+        <div class="tw" id="tAsis"></div>
+      </div>
+
+      <div class="view" id="vacaciones">
+        <h3 class="t">Vacaciones y permisos</h3>
+        <p class="d">Gestiona vacaciones por antigüedad (LFT México) y permisos con reglas de anticipación y cupo mensual.</p>
+        
+        <div class="rules-grid">
+          <div class="rule-card">
+            <strong>🌴 Vacaciones</strong>
+            Anticipación mínima: <b>7 días</b> antes. Se descuentan días hábiles (L-V).
+          </div>
+          <div class="rule-card">
+            <strong>📅 Permiso para faltar</strong>
+            Máximo <b>2 días al mes</b> por empleado. Anticipación mínima: <b>2 días</b> antes.
+          </div>
+          <div class="rule-card">
+            <strong>⏰ Permiso de horario</strong>
+            Para <b>llegar después</b> o <b>salir antes</b>. Anticipación mínima: <b>1 día</b> antes.
+          </div>
+          <div class="rule-card">
+            <strong>🏥 Permiso médico / emergencia</strong>
+            Sin días mínimos de anticipación (sujeto a validación o justificante).
+          </div>
+        </div>
+
+        <div class="bar">
+          <label id="vEl">Empleado<select id="vE" onchange="vPrev()"></select></label>
+          <label>Tipo de solicitud
+            <select id="vT" onchange="onVacTipo()">
+              <option value="Vacaciones">Vacaciones</option>
+              <option value="Permiso para faltar">Permiso para faltar (máx. 2 días/mes)</option>
+              <option value="Permiso de horario">Permiso de horario (llegar después / salir antes)</option>
+              <option value="Permiso médico / emergencia">Permiso médico / emergencia</option>
+            </select>
+          </label>
+          <label id="gVMod" style="display:none">Modalidad de horario
+            <select id="vMod" onchange="vPrev()">
+              <option value="Llegar después (entrada tardía)">Llegar después (entrada tardía)</option>
+              <option value="Salir antes (salida anticipada)">Salir antes (salida anticipada)</option>
+            </select>
+          </label>
+          <label id="gVHora" style="display:none">Hora estimada
+            <input type="time" id="vHora">
+          </label>
+          <label><span id="lblVDesde">Desde</span><input type="date" id="vD" onchange="vPrev()"></label>
+          <label id="gVHasta">Hasta<input type="date" id="vH" onchange="vPrev()"></label>
+          <label id="gVMot" style="display:none">Motivo
+            <input id="vMot" placeholder="Ej. Trámite personal, cita...">
+          </label>
+          <button class="btn" onclick="addVac()">Solicitar</button>
+        </div>
+        <div class="box" style="padding:11px 14px;margin-bottom:14px" id="vInfo"></div>
+        <div class="tw" id="tVac"></div>
+        <div class="box" style="margin-top:14px">
+          <h4>Saldo de vacaciones y permisos del mes</h4>
+          <div id="bal"></div>
+        </div>
+      </div>
+
+      <div class="view" id="incidencias">
+        <h3 class="t">Incidencias</h3>
+        <p class="d">Registra una incidencia. El formulario pide los datos necesarios según el tipo (los marcados con * son obligatorios).</p>
+        <div class="bar">
+          <label id="iEl">Empleado<select id="iE"></select></label>
+          <label>Tipo<select id="iT" onchange="onTipo()"></select></label>
+          <label>Fecha<input type="date" id="iF"></label>
+          <label id="gM"><span></span><input id="iM"></label>
+          <label id="gFo"><span></span><input id="iFo"></label>
+          <label id="gDi"><span></span><input id="iDi" type="number" min="1"></label>
+          <label id="gLu"><span></span><input id="iLu"></label>
+          <label id="gAd"><span></span><input id="iAd" type="file" accept=".pdf,image/*"></label>
+          <button class="btn" onclick="addInc()">Registrar</button>
+        </div>
+        <div class="box">
+          <h4>Detectadas automáticamente (últimos 30 días)</h4>
+          <div class="tw" id="tAuto"></div>
+        </div>
+        <div class="box">
+          <h4>Incidencias registradas</h4>
+          <div class="tw" id="tInc"></div>
+        </div>
+      </div>
+
+      <!-- MÓDULO RECIBOS DE NÓMINA (RH) -->
+      <div class="view" id="nominas">
+        <h3 class="t">Recibos de nómina</h3>
+        <p class="d">Carga los recibos de nómina por periodo, consulta el historial completo, visualiza o descarga los comprobantes.</p>
+        <div class="bar">
+          <label>Empleado<select id="nomE"></select></label>
+          <label>Periodo / Mes<input type="month" id="nomP"></label>
+          <label>Tipo de pago
+            <select id="nomTipo">
+              <option>Quincena 1</option>
+              <option>Quincena 2</option>
+              <option>Mensual</option>
+              <option>Semanal</option>
+              <option>Aguinaldo / Bono</option>
+            </select>
+          </label>
+          <label>Sueldo Neto ($)<input type="number" step="0.01" id="nomM" placeholder="0.00"></label>
+          <label>Archivo de recibo (PDF o imagen)<input type="file" id="nomF" accept=".pdf,image/*"></label>
+          <button class="btn" onclick="addNomina()">Subir recibo</button>
+        </div>
+        <div class="bar" style="margin-top:8px;padding-top:10px;border-top:1px solid var(--line)">
+          <label>Filtrar historial por empleado
+            <select id="nomFiltE" onchange="rNom()">
+              <option value="">Todos los empleados</option>
+            </select>
+          </label>
+        </div>
+        <div class="tw" id="tNom"></div>
+      </div>
+
+      <!-- MÓDULO RETROALIMENTACIÓN Y REPORTES ADMINISTRATIVOS (RH) -->
+      <div class="view" id="auditorias">
+        <h3 class="t">Retroalimentación y reportes administrativos</h3>
+        <p class="d">Emite retroalimentación de desempeño, reconocimientos o reportes administrativos para el personal.</p>
+        <div class="bar">
+          <label>Empleado<select id="retE"></select></label>
+          <label>Categoría
+            <select id="retC">
+              <option value="Retroalimentación positiva">Retroalimentación positiva / Reconocimiento</option>
+              <option value="Retroalimentación de mejora">Retroalimentación de mejora / Seguimiento</option>
+              <option value="Reporte administrativo">Reporte administrativo / Llamada de atención</option>
+              <option value="Evaluación de desempeño">Evaluación de desempeño</option>
+            </select>
+          </label>
+          <label>Asunto / Título<input id="retT" placeholder="Ej. Excelente puntualidad, Seguimiento mensual..."></label>
+          <label style="flex:1;min-width:220px">Detalle / Comentarios<input id="retD" placeholder="Describe la retroalimentación o reporte administrativo"></label>
+          <button class="btn" onclick="addRetro()">Registrar</button>
+        </div>
+        <div class="box">
+          <div class="hr">
+            <h4>Historial de retroalimentación y reportes administrativos</h4>
+            <select id="retFilt" onchange="rAud()" style="padding:6px 10px;font-size:0.82rem">
+              <option value="">Todas las categorías</option>
+              <option value="Retroalimentación positiva">Retroalimentación positiva</option>
+              <option value="Retroalimentación de mejora">Retroalimentación de mejora</option>
+              <option value="Reporte administrativo">Reporte administrativo</option>
+              <option value="Evaluación de desempeño">Evaluación de desempeño</option>
+            </select>
+          </div>
+          <div class="tw" id="tRetro"></div>
+        </div>
+        <details class="box" style="margin-top:14px">
+          <summary style="cursor:pointer;font-weight:700;font-size:0.9rem;color:var(--muted)">Bitácora de actividad del sistema (solo consulta)</summary>
+          <div class="tw" id="tAud" style="margin-top:10px"></div>
+        </details>
+      </div>
+
+      <!-- MÓDULO RECIBOS DE NÓMINA (Empleado) -->
+      <div class="view" id="recibos">
+        <h3 class="t">Recibos de nómina</h3>
+        <p class="d">Consulta tu historial de recibos de nómina, visualízalos en pantalla o descárgalos.</p>
+        <div class="bar">
+          <label>Filtrar por año
+            <select id="recAnio" onchange="rRec()">
+              <option value="">Todos los años</option>
+            </select>
+          </label>
+        </div>
+        <div class="tw" id="tRec"></div>
+      </div>
+
+      <!-- MÓDULO RETROALIMENTACIÓN (Empleado) -->
+      <div class="view" id="retro">
+        <h3 class="t">Retroalimentación y reportes administrativos</h3>
+        <p class="d">Consulta los reportes administrativos y la retroalimentación recibida por parte de Recursos Humanos, o envía tus comentarios.</p>
+        <div class="bar">
+          <label>Asunto<input id="empRetT" placeholder="Ej. Sugerencia, comentario de área..."></label>
+          <label style="flex:1;min-width:220px">Mensaje para RH<input id="empRetD" placeholder="Escribe tu retroalimentación o comentario"></label>
+          <button class="btn" onclick="addRetroEmp()">Enviar comentario</button>
+        </div>
+        <div class="box">
+          <h4>Historial recibido y enviado</h4>
+          <div class="tw" id="tRetroEmp"></div>
+        </div>
+      </div>
+
+      <!-- MÓDULO NOTIFICACIONES (Empleado) -->
+      <div class="view" id="notificaciones">
+        <h3 class="t">Notificaciones y Avisos</h3>
+        <p class="d">Mensajes institucionales y avisos personales sobre tus solicitudes de Recursos Humanos.</p>
+        <div class="box">
+          <ul class="list" id="tNot"></ul>
+        </div>
+      </div>
+
+      <div class="view" id="reportes">
+        <h3 class="t">Reportes</h3>
+        <p class="d">Todo se calcula con la asistencia, vacaciones, incidencias y personal registrados.</p>
+        <div class="bar">
+          <label>Mes<input type="month" id="rM" onchange="rRep()"></label>
+        </div>
+        <div id="rep"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CÁMARA FOTO DE PERFIL -->
+<dialog id="dlgCam" onclose="cerrarCamara()">
+  <form onsubmit="event.preventDefault()">
+    <h3>Tomar foto de perfil</h3>
+    <video id="camVideo" autoplay playsinline></video>
+    <canvas id="camCanvas" style="display:none"></canvas>
+    <div class="act" style="justify-content:space-between">
+      <button class="btn g s" type="button" onclick="cambiarCamara()">🔄 Cambiar cámara</button>
+      <div class="act">
+        <button class="btn" type="button" onclick="capturarFoto()">📸 Capturar y guardar</button>
+        <button class="btn g" type="button" onclick="cerrarCamara()">Cancelar</button>
+      </div>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlg">
+  <form onsubmit="saveEmp(event)">
+    <h3 id="dT">Nuevo empleado</h3>
+    <input type="hidden" id="eId">
+    <div style="display:flex;align-items:center;gap:14px;background:var(--surface2);padding:12px;border-radius:12px">
+      <div id="eFotoPrev"></div>
+      <div style="display:grid;gap:6px;flex:1">
+        <span style="font-size:0.78rem;font-weight:700;color:var(--muted)">Foto de perfil (opcional)</span>
+        <div class="act">
+          <button class="btn g s" type="button" onclick="abrirCamara('modal')">📷 Tomar foto</button>
+          <button class="btn g s" type="button" onclick="$('eFotoFile').click()">🖼️ Subir archivo</button>
+          <button class="btn g s" type="button" id="btnDelEFoto" style="display:none" onclick="quitarFotoModal()">✕ Quitar</button>
+        </div>
+        <input type="file" id="eFotoFile" accept="image/*" style="display:none" onchange="procesarFoto(this, 'modal')">
+      </div>
+    </div>
+    <label>ID de Empleado (para Checador y acceso)
+      <input type="text" id="eCod" required placeholder="Ej. 101 o EMP-01" autocomplete="off">
+    </label>
+    <label>Nombre completo<input id="eN" required oninput="renderFotoModal()"></label>
+    <label>Puesto<input id="eP" required></label>
+    <label>Fecha de ingreso a la empresa<input type="date" id="eF" required></label>
+    <div class="bar" style="margin:0">
+      <label>Hora de entrada<input type="time" id="eHe" required></label>
+      <label>Hora de salida<input type="time" id="eHs" required></label>
+    </div>
+    <label>Teléfono<input id="eT" type="tel"></label>
+    <label>Correo (es su usuario de acceso)<input id="eC" type="email"></label>
+    <label id="ePwl">Contraseña de acceso (déjala vacía para no cambiarla)
+      <div class="pw-wrap">
+        <input id="ePw" type="password" minlength="6" placeholder="Mínimo 6 caracteres">
+        <button type="button" class="pw-eye" id="btnEyeEPw" onclick="togglePw('ePw', this)" title="Mostrar contraseña" aria-label="Mostrar contraseña">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+    </label>
+    <div class="bar" style="margin:0">
+      <label>Estatus
+        <select id="eS">
+          <option>Activo</option>
+          <option>Baja</option>
+        </select>
+      </label>
+      <label>Fecha de baja<input type="date" id="eB"></label>
+    </div>
+    <div class="act">
+      <button class="btn" type="submit">Guardar</button>
+      <button class="btn g" type="button" onclick="dlg.close()">Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgP" style="width:min(640px,94vw);max-height:92vh;overflow:auto">
+  <form onsubmit="savePd(event)">
+    <h3>Datos personales</h3>
+    <h4>Identidad</h4>
+    <div class="fg">
+      <label>Fecha de nacimiento<input type="date" id="pFn"></label>
+      <label>Estado civil
+        <select id="pEc">
+          <option value="">—</option>
+          <option>Soltero/a</option>
+          <option>Casado/a</option>
+          <option>Unión libre</option>
+          <option>Divorciado/a</option>
+          <option>Viudo/a</option>
+        </select>
+      </label>
+      <label>Nacionalidad<input id="pNa" placeholder="Mexicana"></label>
+      <label>CURP<input id="pCu" maxlength="18" pattern="[A-Za-z0-9]{18}" title="18 caracteres"></label>
+      <label>RFC<input id="pRf" maxlength="13" pattern="[A-Za-z0-9&]{12,13}" title="12 o 13 caracteres"></label>
+      <label>NSS (IMSS)<input id="pNs" inputmode="numeric" maxlength="11" pattern="\d{11}" title="11 dígitos"></label>
+      <label>Tipo de sangre
+        <select id="pTs">
+          <option value="">—</option>
+          <option>O+</option><option>O-</option>
+          <option>A+</option><option>A-</option>
+          <option>B+</option><option>B-</option>
+          <option>AB+</option><option>AB-</option>
+        </select>
+      </label>
+      <label>Alergias o condiciones médicas<input id="pAl"></label>
+    </div>
+    <h4>Domicilio</h4>
+    <div class="fg">
+      <label>Calle y número<input id="pCa"></label>
+      <label>Colonia<input id="pCo"></label>
+      <label>Municipio o ciudad<input id="pCi"></label>
+      <label>Estado<input id="pEs"></label>
+      <label>Código postal<input id="pCp" inputmode="numeric" maxlength="5" pattern="\d{5}" title="5 dígitos"></label>
+    </div>
+    <h4>Contacto</h4>
+    <div class="fg">
+      <label>Teléfono / celular<input id="pTe" type="tel"></label>
+      <label>Teléfono alterno<input id="pT2" type="tel"></label>
+    </div>
+    <h4>Contacto en caso de emergencia</h4>
+    <div class="fg">
+      <label>Nombre<input id="pEm"></label>
+      <label>Parentesco<input id="pEp"></label>
+      <label>Teléfono<input id="pEt" type="tel"></label>
+    </div>
+    <div class="act">
+      <button class="btn" type="submit">Guardar</button>
+      <button class="btn g" type="button" onclick="dlgP.close()">Cancelar</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+
+<script>
+// ---------- VARIABLES Y CONSTANTES ----------
+var S = null;
+var USER = null;
+var ROL = 'rh';
+var ME = null;
+var PV = null;
+var cur = 'inicio';
+var mode = 'local';
+var sb = null;
+var reg = false;
+var st = null;
+var guardando = false;
+var VER = 0;
+var ACCESOS = {};
+var camStream = null;
+var camTarget = 'perfil';
+var camFacing = 'user';
+var eFotoTemp = '';
+
+var SVG_EYE_OPEN = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+var SVG_EYE_OFF = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+var DOCT = ['Contrato', 'INE', 'Comprobante de domicilio', 'CURP', 'RFC', 'Acta de nacimiento', 'Otro'];
+var REQD = ['Contrato', 'INE', 'Comprobante de domicilio'];
+var TOLM = 10;
+var MAXF = 1200000;
+var MAX_PERMISOS_MES = 2;
+
+var REGLAS_VAC = {
+  'Vacaciones': { ant: 7, label: '7 días de anticipación' },
+  'Permiso para faltar': { ant: 2, label: '2 días de anticipación (máx. 2 días/mes)' },
+  'Permiso de horario': { ant: 1, label: '1 día de anticipación' },
+  'Permiso médico / emergencia': { ant: 0, label: 'Sin anticipación mínima' }
+};
+
+var TI = {
+  'Justificante de falta o retardo': { f: ['M', 'Ad'], r: ['M'] },
+  'Incapacidad médica': { f: ['Fo', 'Di', 'M', 'Ad'], r: ['Fo', 'Di', 'Ad'] },
+  'Accidente de trabajo': { f: ['Lu', 'M', 'Ad'], r: ['Lu', 'M'] },
+  'Acta administrativa': { f: ['M'], r: ['M'], rh: 1 },
+  'Otra': { f: ['M'], r: ['M'] }
+};
+
+var GL = {
+  M: 'Motivo o descripción',
+  Fo: 'Folio de la incapacidad (IMSS)',
+  Di: 'Días de incapacidad',
+  Lu: 'Lugar del accidente',
+  Ad: 'Comprobante (PDF o imagen, máx. 1.2 MB)'
+};
+
+try {
+  var C = window.RH_CONFIG || {};
+  if (C.url && C.key && window.supabase) {
+    sb = window.supabase.createClient(C.url, C.key);
+    mode = 'cloud';
+  }
+} catch (e) {}
+
+// ---------- UTILIDADES ----------
+function $(i) { return document.getElementById(i); }
+
+function togglePw(id, btn) {
+  var inp = $(id);
+  if (!inp) return;
+  var show = inp.type === 'password';
+  inp.type = show ? 'text' : 'password';
+  if (btn) {
+    btn.title = show ? 'Ocultar contraseña' : 'Mostrar contraseña';
+    btn.setAttribute('aria-label', btn.title);
+    btn.innerHTML = show ? SVG_EYE_OFF : SVG_EYE_OPEN;
+  }
+}
+
+function resetPwField(id, btnId) {
+  var inp = $(id);
+  var btn = $(btnId);
+  if (inp) inp.type = 'password';
+  if (btn) {
+    btn.title = 'Mostrar contraseña';
+    btn.setAttribute('aria-label', 'Mostrar contraseña');
+    btn.innerHTML = SVG_EYE_OPEN;
+  }
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function uid() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+}
+
+function iso(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+
+function today() { return iso(new Date()); }
+
+function addD(s, n) {
+  var d = new Date(s + 'T12:00:00');
+  d.setDate(d.getDate() + n);
+  return iso(d);
+}
+
+function diffDays(d1, d2) {
+  var a = new Date(d1 + 'T12:00:00');
+  var b = new Date(d2 + 'T12:00:00');
+  return Math.round((b - a) / 86400000);
+}
+
+function addY(s, n) {
+  var d = new Date(s + 'T12:00:00');
+  d.setFullYear(d.getFullYear() + n);
+  return iso(d);
+}
+
+function addMes(ym, n) {
+  var d = new Date(ym + '-01T12:00:00');
+  d.setMonth(d.getMonth() + n);
+  return iso(d).slice(0, 7);
+}
+
+function fmt(s) {
+  if (!s) return '—';
+  var p = s.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function mins(t) {
+  var p = (t || '0:0').split(':');
+  return +p[0] * 60 + +p[1];
+}
+
+function toast(m) {
+  var t = $('toast');
+  t.textContent = m;
+  t.classList.add('on');
+  clearTimeout(toast.t);
+  toast.t = setTimeout(function() { t.classList.remove('on'); }, 2800);
+}
+
+function emp(id) {
+  return S.emps.find(function(e) { return e.id == id; });
+}
+
+function nm(id) {
+  var e = emp(id);
+  return e ? e.nombre : '(eliminado)';
+}
+
+function act() {
+  return S.emps.filter(function(e) { return e.estatus != 'Baja'; });
+}
+
+function ini(n) {
+  return (n || '?').split(' ').slice(0, 2).map(function(w) { return w[0] || ''; }).join('').toUpperCase();
+}
+
+function avatar(e, big) {
+  var c = 'av' + (big ? ' big' : '');
+  if (e && e.foto) {
+    return '<img class="' + c + '" src="' + esc(e.foto) + '" alt="' + esc(e.nombre) + '">';
+  }
+  return '<span class="' + c + '">' + esc(ini(e ? e.nombre : '?')) + '</span>';
+}
+
+function cls(e) {
+  return {
+    'A tiempo': 'ok', 'Retardo': 'wa', 'Falta': 'bd', 'Sin entrada': 'wa',
+    'Permiso': 'in', 'Vacaciones': 'in', 'Incapacidad': 'in', 'Pendiente': 'wa',
+    'Autorizado': 'ok', 'Aprobada': 'ok', 'Registrada': 'ok', 'Rechazado': 'bd', 'Rechazada': 'bd',
+    'Retroalimentación positiva': 'ok', 'Retroalimentación de mejora': 'wa',
+    'Reporte administrativo': 'bd', 'Evaluación de desempeño': 'in', 'Comentario de empleado': 'in'
+  }[e] || 'in';
+}
+
+function tag(e) { return '<span class="tag ' + cls(e) + '">' + esc(e) + '</span>'; }
+
+function sure(b, fn) {
+  if (!b.dataset.s) {
+    b.dataset.s = 1;
+    var t = b.textContent;
+    b.textContent = '¿Seguro?';
+    setTimeout(function() { b.dataset.s = ''; b.textContent = t; }, 2500);
+    return;
+  }
+  fn();
+}
+
+function dataToBlob(d) {
+  var p = d.data.split(',');
+  var b = atob(p[1]);
+  var u = new Uint8Array(b.length);
+  for (var i = 0; i < b.length; i++) u[i] = b.charCodeAt(i);
+  return new Blob([u], { type: d.mime || 'application/octet-stream' });
+}
+
+function openData(d) {
+  if (!d || !d.data) return;
+  window.open(URL.createObjectURL(dataToBlob(d)), '_blank');
+}
+
+function downloadData(d, fallbackName) {
+  if (!d || !d.data) return;
+  var url = URL.createObjectURL(dataToBlob(d));
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = d.nombre || fallbackName || 'documento';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function logAudit(accion, detalle) {
+  S.aud = S.aud || [];
+  S.aud.unshift({
+    id: uid(),
+    fecha: new Date().toLocaleString('es-MX'),
+    usuario: USER ? USER.email : 'Sistema',
+    accion: accion,
+    detalle: detalle
+  });
+}
+
+// ---------- REGLAS DE NEGOCIO ----------
+function anios(ing, ref) {
+  if (!ing) return 0;
+  ref = ref || today();
+  var a = +ref.slice(0, 4) - +ing.slice(0, 4);
+  if (ref.slice(5) < ing.slice(5)) a--;
+  return Math.max(a, 0);
+}
+
+function antig(ing) {
+  if (!ing) return '—';
+  var r = today();
+  var y = anios(ing);
+  var m = ((+r.slice(5, 7) - +ing.slice(5, 7) - (+r.slice(8) < +ing.slice(8) ? 1 : 0)) % 12 + 12) % 12;
+  return y + (y == 1 ? ' año ' : ' años ') + m + (m == 1 ? ' mes' : ' meses');
+}
+
+function diasLey(a) {
+  if (a < 1) return 0;
+  if (a <= 5) return 10 + 2 * a;
+  return 20 + 2 * Math.ceil((a - 5) / 5);
+}
+
+function dh(d, h) {
+  var n = 0, x = d;
+  while (x <= h) {
+    var w = new Date(x + 'T12:00:00').getDay();
+    if (w > 0 && w < 6) n++;
+    x = addD(x, 1);
+  }
+  return n;
+}
+
+function saldo(e) {
+  var y = anios(e.ingreso);
+  var d = diasLey(y);
+  var ini = e.ingreso ? addY(e.ingreso, y) : '';
+  var fin = e.ingreso ? addY(e.ingreso, y + 1) : '';
+
+  function sum(es) {
+    return S.vac.filter(function(v) {
+      return v.emp == e.id && v.tipo == 'Vacaciones' && v.estado == es && v.desde >= ini && v.desde < fin;
+    }).reduce(function(s, v) { return s + dh(v.desde, v.hasta); }, 0);
+  }
+
+  var u = sum('Autorizado');
+  var p = sum('Pendiente');
+  return { y: y, d: d, u: u, p: p, r: d - u - p, prox: fin };
+}
+
+function permisosMesUsados(empId, ym) {
+  return S.vac.filter(function(v) {
+    return v.emp == empId && v.tipo == 'Permiso para faltar' && v.estado != 'Rechazado';
+  }).reduce(function(total, v) {
+    var c = 0, x = v.desde;
+    while (x <= v.hasta) {
+      if (x.slice(0, 7) == ym) {
+        var w = new Date(x + 'T12:00:00').getDay();
+        if (w > 0 && w < 6) c++;
+      }
+      x = addD(x, 1);
+    }
+    return total + c;
+  }, 0);
+}
+
+function faltanDocs(e) {
+  return REQD.filter(function(t) {
+    return !(e.docs || []).some(function(d) { return d.tipo == t; });
+  }).length;
+}
+
+function est(id, f) {
+  var vAut = S.vac.find(function(v) {
+    return v.emp == id && v.estado == 'Autorizado' && f >= v.desde && f <= v.hasta && v.tipo != 'Permiso de horario';
+  });
+  if (vAut) {
+    return vAut.tipo == 'Vacaciones' ? 'Vacaciones' : 'Permiso';
+  }
+  if (S.inc.some(function(i) { return i.emp == id && i.tipo == 'Incapacidad médica' && (i.estado == 'Aprobada' || i.estado == 'Registrada') && f >= i.fecha && f <= addD(i.fecha, (+i.dias || 1) - 1); })) {
+    return 'Incapacidad';
+  }
+  var a = S.asis.find(function(a) { return a.emp == id && a.fecha == f; });
+  if (!a) return null;
+  if (!a.ent && !a.sal) return 'Falta';
+  if (!a.ent) return 'Sin entrada';
+  var e = emp(id);
+  return mins(a.ent) > mins(e && e.hEnt || '09:00') + TOLM ? 'Retardo' : 'A tiempo';
+}
+
+function just(id, f) {
+  return S.inc.some(function(i) { return i.emp == id && i.tipo == 'Justificante de falta o retardo' && i.fecha == f && (i.estado == 'Aprobada' || i.estado == 'Registrada'); });
+}
+
+function mstats(ym, ids) {
+  var r = { ok: 0, ret: 0, fal: 0, sin: 0, per: 0, vac: 0, inc: 0 };
+  var t = today();
+  var n = new Date(ym + '-01T12:00:00');
+  var m = n.getMonth();
+  var K = { 'A tiempo': 'ok', 'Retardo': 'ret', 'Falta': 'fal', 'Sin entrada': 'sin', 'Permiso': 'per', 'Vacaciones': 'vac', 'Incapacidad': 'inc' };
+
+  for (var d = new Date(n); d.getMonth() == m; d.setDate(d.getDate() + 1)) {
+    var f = iso(d);
+    if (f > t) break;
+    var w = d.getDay();
+    (ids || act()).forEach(function(e) {
+      if (e.ingreso && f < e.ingreso) return;
+      var s = est(e.id, f);
+      if (!s) return;
+      if ((w == 0 || w == 6) && (s == 'Vacaciones' || s == 'Permiso' || s == 'Incapacidad')) return;
+      r[K[s]]++;
+    });
+  }
+  return r;
+}
+
+function pct(m) {
+  var t = m.ok + m.ret + m.fal + m.sin;
+  return t ? Math.round((m.ok + m.ret) / t * 100) : 0;
+}
+
+// ---------- ACCESO Y ALMACENAMIENTO ----------
+function U() {
+  try { return JSON.parse(localStorage.getItem('rh3.users')) || {}; } catch (e) { return {}; }
+}
+
+function setU(u) {
+  try { localStorage.setItem('rh3.users', JSON.stringify(u)); } catch (e) {}
+}
+
+function hash(p, e) {
+  var s = e + '|' + p;
+  try {
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)).then(function(b) {
+      return Array.from(new Uint8Array(b)).map(function(x) { return x.toString(16).padStart(2, '0'); }).join('');
+    });
+  } catch (x) {
+    return Promise.resolve(btoa(unescape(encodeURIComponent(s))));
+  }
+}
+
+function llamarApi(datos) {
+  return sb.auth.getSession().then(function(r) {
+    var token = r.data.session ? r.data.session.access_token : '';
+    return fetch('/api/usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+      body: JSON.stringify(datos)
+    });
+  }).then(function(r) {
+    return r.json();
+  }).catch(function() {
+    return { error: 'No se pudo conectar con el servidor' };
+  });
+}
+
+function msg(t, ok) {
+  var m = $('msg');
+  m.textContent = t;
+  m.className = ok ? 'g' : '';
+}
+
+function tabAuth(r) {
+  reg = r;
+  $('t0').classList.toggle('on', !r);
+  $('t1').classList.toggle('on', r);
+  $('aBtn').textContent = r ? 'Crear cuenta' : 'Entrar';
+  msg('');
+}
+
+function doAuth(ev) {
+  ev.preventDefault();
+  var e = $('lE').value.trim().toLowerCase();
+  var p = $('lP').value;
+  msg('');
+
+  if (p.length < 6) return msg('La contraseña debe tener al menos 6 caracteres');
+
+  if (mode == 'cloud') {
+    sb.auth.signInWithPassword({ email: e, password: p })
+      .then(function(r) {
+        if (r.error) return msg('Correo o contraseña incorrectos');
+        return sb.from('perfiles').select('rol, emp_id').eq('user_id', r.data.user.id).maybeSingle()
+          .then(function(pf) {
+            if (!pf.data) {
+              sb.auth.signOut();
+              return msg('Tu cuenta no tiene acceso. Pide ayuda a Recursos Humanos.');
+            }
+            start({ id: r.data.user.id, email: e, rol: pf.data.rol, emp: pf.data.emp_id });
+          });
+      }).catch(function() { msg('No se pudo conectar. Revisa tu configuración.'); });
+    return;
+  }
+
+  hash(p, e).then(function(h) {
+    var u = U();
+    if (reg) {
+      if (u[e]) return msg('Ese usuario ya existe');
+      u[e] = { h: h, rol: 'rh' };
+      setU(u);
+    } else if (!u[e] || u[e].h !== h) {
+      return msg('Usuario o contraseña incorrectos');
+    }
+
+    start({ id: e, email: e, rol: u[e].rol, emp: u[e].emp });
+  });
+}
+
+function loadData() {
+  var E = { emps: [], asis: [], vac: [], inc: [], nom: [], aud: [], retro: [] };
+
+  function norm(d) {
+    S = d && d.emps ? d : E;
+    S.asis = S.asis || [];
+    S.vac = S.vac || [];
+    S.inc = S.inc || [];
+    S.nom = S.nom || [];
+    S.aud = S.aud || [];
+    S.retro = S.retro || [];
+  }
+
+  if (mode == 'cloud') {
+    if (ROL != 'rh') {
+      return sb.rpc('mis_datos').then(function(r) {
+        norm(r.data);
+        VER = r.data && r.data.version ? r.data.version : 0;
       });
     }
-    setInterval(actualizarReloj, 1000);
-    actualizarReloj();
+    return sb.from('datos_rh').select('data, version').eq('id', 1).maybeSingle().then(function(r) {
+      norm(r.data && r.data.data);
+      VER = r.data ? r.data.version : 0;
+      return sb.from('perfiles').select('emp_id, email').eq('rol', 'emp');
+    }).then(function(r) {
+      ACCESOS = {};
+      (r.data || []).forEach(function(x) { ACCESOS[x.emp_id] = x.email; });
+    });
+  }
 
-    const video = document.getElementById('video');
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 480 } })
-        .then((stream) => { video.srcObject = stream; })
-        .catch(() => { console.warn('Sin acceso a cámara; se registrará solo con ID y hora.'); });
-    }
+  try { norm(JSON.parse(localStorage.getItem('rh3.data'))); } catch (e) { norm(null); }
+  return Promise.resolve();
+}
 
-    fetch('/api/checar')
-      .then((r) => r.json())
-      .then((data) => {
-        const sel = document.getElementById('listaEmp');
-        if (data.ok && data.empleados.length) {
-          sel.innerHTML = '<option value="">-- Selecciona un colaborador --</option>' +
-            data.empleados.map((e) => `<option value="${e.id}">ID ${e.id} · ${e.nombre}</option>`).join('');
-        } else {
-          sel.innerHTML = '<option value="">Escribe tu ID manualmente</option>';
-        }
-      })
-      .catch(() => {});
+function save() {
+  if (!USER) return true;
 
-    function addKey(k) { document.getElementById('empId').value += k; }
-    function clearKey() { document.getElementById('empId').value = ''; }
-    function delKey() {
-      const inp = document.getElementById('empId');
-      inp.value = inp.value.slice(0, -1);
-    }
-
-    function capturarFoto() {
-      if (!video.videoWidth) return '';
-      const canvas = document.getElementById('canvas');
-      canvas.width = 320;
-      canvas.height = 240;
-      const ctx = canvas.getContext('2d');
-      ctx.translate(canvas.width, 0);
-      ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      return canvas.toDataURL('image/jpeg', 0.65);
-    }
-
-    async function registrar(tipo) {
-      const empId = document.getElementById('empId').value.trim();
-      const status = document.getElementById('status');
-      if (resetTimer) clearTimeout(resetTimer);
-
-      if (!empId) {
-        status.className = 'status err';
-        status.style.display = 'block';
-        status.textContent = '⚠️ Ingresa el ID asignado por Recursos Humanos.';
+  if (mode == 'cloud') {
+    clearTimeout(st);
+    guardando = true;
+    st = setTimeout(function() {
+      st = null;
+      if (ROL != 'rh') {
+        sb.rpc('guardar_mis_datos', { slice: S }).then(function(r) {
+          guardando = !!st;
+          if (r.error) return toast('Error al guardar en la nube');
+          VER = r.data;
+          avisarCambio();
+        });
         return;
       }
-
-      document.getElementById('btnIn').disabled = true;
-      document.getElementById('btnOut').disabled = true;
-      status.style.display = 'none';
-
-      try {
-        const foto = capturarFoto();
-        const res = await fetch('/api/checar', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ empId, tipo, foto })
+      sb.from('datos_rh').update({ data: S, version: VER + 1, updated_at: new Date().toISOString() })
+        .eq('id', 1).eq('version', VER).select('version')
+        .then(function(r) {
+          guardando = !!st;
+          if (r.error) return toast('Error al guardar en la nube');
+          if (r.data && r.data.length) { VER = r.data[0].version; avisarCambio(); return; }
+          loadData().then(function() {
+            render();
+            toast('Se detectó una actualización reciente (ej. Terminal Checador). Datos sincronizados.');
+          });
         });
-        const data = await res.json();
+    }, 400);
+    return true;
+  }
 
-        status.style.display = 'block';
-        if (!res.ok || !data.ok) {
-          status.className = 'status err';
-          status.textContent = '❌ ' + (data.error || 'No se pudo registrar');
-        } else {
-          status.className = 'status ok';
-          status.textContent = `✅ ${tipo.toUpperCase()} registrada · ${data.empleado} (ID ${data.codigo}) · ${data.hora} hrs · ${data.estatus}`;
-          document.getElementById('empId').value = '';
-          document.getElementById('listaEmp').value = '';
-          resetTimer = setTimeout(() => { status.style.display = 'none'; }, 4500);
-        }
-      } catch (e) {
-        status.style.display = 'block';
-        status.className = 'status err';
-        status.textContent = '❌ Error de conexión con el servidor.';
-      } finally {
-        document.getElementById('btnIn').disabled = false;
-        document.getElementById('btnOut').disabled = false;
+  try {
+    localStorage.setItem('rh3.data', JSON.stringify(S));
+    return true;
+  } catch (e) {
+    toast('Almacenamiento lleno. Elimina documentos pesados.');
+    return false;
+  }
+}
+
+function start(u) {
+  USER = u;
+  ROL = u.rol;
+  ME = u.emp || null;
+  PV = ME;
+
+  loadData().then(function() {
+    logAudit('Inicio de sesión', 'El usuario ' + u.email + ' ingresó al sistema.');
+    save();
+    $('login').style.display = 'none';
+    $('appw').style.display = 'block';
+    $('who').textContent = u.email;
+    $('rolp').textContent = ROL == 'rh' ? 'Recursos Humanos' : 'Empleado';
+    $('lP').value = '';
+    resetPwField('lP', 'btnEyeLP');
+    $('vEl').style.display = $('iEl').style.display = ROL == 'rh' ? '' : 'none';
+    $('aF').value = today();
+    $('rM').value = today().slice(0, 7);
+    $('iF').value = today();
+    if ($('nomP')) $('nomP').value = today().slice(0, 7);
+    nav();
+    initInc();
+    onVacTipo();
+    go(ROL == 'rh' ? 'inicio' : 'perfil');
+    conectarTiempoReal();
+  });
+}
+
+// ---------- ACTUALIZACIÓN EN TIEMPO REAL ----------
+var canal = null;
+var pendiente = false;
+
+function conectarTiempoReal() {
+  if (mode != 'cloud' || canal) return;
+  canal = sb.channel('rh-express-cambios');
+  canal.on('broadcast', { event: 'cambio' }, function() {
+    pendiente = true;
+    revisarCambios();
+  }).subscribe();
+}
+
+function desconectarTiempoReal() {
+  if (canal) sb.removeChannel(canal);
+  canal = null;
+}
+
+function avisarCambio() {
+  if (canal) canal.send({ type: 'broadcast', event: 'cambio', payload: {} });
+}
+
+function usuarioOcupado() {
+  var a = document.activeElement;
+  var campo = a && ['INPUT', 'SELECT', 'TEXTAREA'].indexOf(a.tagName) > -1;
+  var enExpediente = campo && $('pf') && $('pf').contains(a);
+  var archivo = $('dF') && $('dF').files && $('dF').files.length;
+  var modalAbierto = ($('dlg') && $('dlg').open) || ($('dlgP') && $('dlgP').open) || ($('dlgCam') && $('dlgCam').open);
+  return !!(enExpediente || archivo || modalAbierto);
+}
+
+function revisarCambios() {
+  if (mode != 'cloud' || !USER || document.hidden || guardando || usuarioOcupado()) return;
+  pendiente = false;
+
+  var pregunta = ROL == 'rh' ?
+    sb.from('datos_rh').select('version').eq('id', 1).maybeSingle().then(function(r) { return r.data ? r.data.version : VER; }) :
+    sb.rpc('mi_version').then(function(r) { return r.error ? VER : r.data; });
+
+  pregunta.then(function(v) {
+    if (v == VER || !USER) return;
+    if (guardando || usuarioOcupado()) { pendiente = true; return; }
+    loadData().then(function() { if (USER) render(); });
+  });
+}
+
+setInterval(function() { if (pendiente) revisarCambios(); }, 2000);
+setInterval(function() { pendiente = true; }, 10000);
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) { pendiente = true; revisarCambios(); }
+});
+
+function logout() {
+  cerrarCamara();
+  resetPwField('lP', 'btnEyeLP');
+  (mode == 'cloud' ? sb.auth.signOut() : Promise.resolve()).then(function() {
+    desconectarTiempoReal();
+    USER = null;
+    S = null;
+    $('appw').style.display = 'none';
+    $('login').style.display = 'grid';
+  });
+}
+
+// ---------- NAVEGACIÓN ----------
+function nav() {
+  var L = ROL == 'rh' ? 
+    [
+      ['inicio', '🏠', 'Inicio'],
+      ['personal', '🗂️', 'Personal'],
+      ['asistencia', '⏱️', 'Asistencia'],
+      ['vacaciones', '🌴', 'Permisos'],
+      ['incidencias', '⚠️', 'Incidencias'],
+      ['nominas', '💵', 'Recibos de nómina'],
+      ['auditorias', '📋', 'Reportes adm.'],
+      ['reportes', '📊', 'Estadísticas']
+    ] : 
+    [
+      ['perfil', '👤', 'Mi perfil'],
+      ['vacaciones', '🌴', 'Permisos'],
+      ['incidencias', '⚠️', 'Incidencias'],
+      ['recibos', '📄', 'Recibos de nómina'],
+      ['retro', '💬', 'Retroalimentación'],
+      ['notificaciones', '🔔', 'Notificaciones']
+    ];
+
+  $('links').innerHTML = L.map(function(l) {
+    return '<button data-v="' + l[0] + '" onclick="go(\'' + l[0] + '\')"><span class="ic">' + l[1] + '</span><span>' + l[2] + '</span></button>';
+  }).join('');
+}
+
+function go(v) {
+  cur = v;
+  if (v == 'perfil' && ROL != 'rh') PV = ME;
+  document.querySelectorAll('.view').forEach(function(x) { x.classList.toggle('on', x.id == v); });
+  document.querySelectorAll('#links button').forEach(function(b) {
+    b.classList.toggle('on', b.dataset.v == v || (v == 'perfil' && ROL == 'rh' && b.dataset.v == 'personal'));
+  });
+  window.scrollTo(0, 0);
+  render();
+}
+
+function verPerfil(id) {
+  PV = id;
+  go('perfil');
+}
+
+function render() {
+  fillSel();
+  var fn = {
+    inicio: rIni,
+    personal: rPers,
+    perfil: rPerfil,
+    asistencia: rAsis,
+    vacaciones: rVac,
+    incidencias: rInc,
+    nominas: rNom,
+    auditorias: rAud,
+    recibos: rRec,
+    retro: rRetroEmp,
+    notificaciones: rNot,
+    reportes: rRep
+  };
+  if (fn[cur]) fn[cur]();
+}
+
+function fillSel() {
+  ['aE', 'vE', 'iE', 'nomE', 'retE'].forEach(function(id) {
+    var s = $(id);
+    if (!s) return;
+    var v = s.value;
+    var A = act();
+    s.innerHTML = A.length ? A.map(function(e) {
+      return '<option value="' + e.id + '">' + (e.codigo ? '[' + esc(e.codigo) + '] ' : '') + esc(e.nombre) + '</option>';
+    }).join('') : '<option value="">Sin empleados</option>';
+    if (v && emp(v)) s.value = v;
+  });
+
+  var nf = $('nomFiltE');
+  if (nf) {
+    var fv = nf.value;
+    nf.innerHTML = '<option value="">Todos los empleados</option>' + S.emps.map(function(e) {
+      return '<option value="' + e.id + '">' + esc(e.nombre) + '</option>';
+    }).join('');
+    if (fv) nf.value = fv;
+  }
+}
+
+// ---------- VISTA: INICIO ----------
+function rIni() {
+  var t = today();
+  var A = act();
+  var fa = 0;
+  var re = 0;
+
+  A.forEach(function(e) {
+    var s = est(e.id, t);
+    if (s == 'Falta') fa++;
+    if (s == 'Retardo') re++;
+  });
+
+  var pv = S.vac.filter(function(v) { return v.estado == 'Pendiente'; });
+  var pi = S.inc.filter(function(i) { return i.estado == 'Pendiente'; });
+  var ex = A.filter(function(e) { return faltanDocs(e) > 0; });
+
+  $('hoy').textContent = new Date().toLocaleDateString('es-MX', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  $('kpis').innerHTML = [
+    [A.length, 'Empleados activos'],
+    [fa, 'Faltas hoy'],
+    [re, 'Retardos hoy'],
+    [pv.length + pi.length + ex.length, 'Pendientes']
+  ].map(function(k) { return '<div class="kpi"><b>' + k[0] + '</b><small>' + k[1] + '</small></div>'; }).join('');
+
+  var h = '';
+  for (var i = 4; i >= 0; i--) {
+    var f = addD(t, -i);
+    var p = A.filter(function(e) { var s = est(e.id, f); return s == 'A tiempo' || s == 'Retardo'; }).length;
+    var c = A.length ? Math.round(p / A.length * 100) : 0;
+    h += '<div title="' + c + '%"><span style="height:' + c + '%"></span>' + new Date(f + 'T12:00:00').toLocaleDateString('es-MX', { weekday: 'short' }) + '</div>';
+  }
+  $('bars').innerHTML = h;
+
+  var l = pv.map(function(v) { return '<li class="lk" onclick="go(\'vacaciones\')"><span>Aprobar ' + esc(v.tipo.toLowerCase()) + ' – ' + esc(nm(v.emp)) + '</span>' + tag('Pendiente') + '</li>'; })
+    .concat(pi.map(function(i) { return '<li class="lk" onclick="go(\'incidencias\')"><span>Revisar ' + esc(i.tipo.toLowerCase()) + ' – ' + esc(nm(i.emp)) + '</span>' + tag('Pendiente') + '</li>'; }))
+    .concat(ex.map(function(e) { return '<li class="lk" onclick="verPerfil(\'' + e.id + '\')"><span>Expediente – ' + esc(e.nombre) + '</span><span class="tag bd">Faltan ' + faltanDocs(e) + '</span></li>'; }));
+
+  $('pend').innerHTML = l.length ? l.join('') : '<li style="color:var(--muted)">Todo al día 🎉</li>';
+}
+
+// ---------- VISTA: PERSONAL ----------
+function rPers() {
+  var q = $('q').value.toLowerCase();
+  var all = $('pS').value == 'Todos';
+  var u = U();
+  var L = S.emps.filter(function(e) {
+    return (all || e.estatus != 'Baja') && (e.nombre + ' ' + e.puesto + ' ' + (e.codigo || '')).toLowerCase().indexOf(q) > -1;
+  });
+
+  if (!L.length) {
+    $('tPers').innerHTML = '<div class="empty">' + (S.emps.length ? 'Sin resultados.' : 'Aún no hay empleados. Agrega el primero con “Nuevo empleado”.') + '</div>';
+    return;
+  }
+
+  $('tPers').innerHTML = '<table><tr><th>ID</th><th>Empleado</th><th>Horario</th><th>Antigüedad</th><th>Expediente</th><th>Datos</th><th>Acceso</th><th></th></tr>' +
+    L.map(function(e) {
+      var f = faltanDocs(e);
+      var ac = mode == 'cloud' ? !!ACCESOS[e.id] : Object.keys(u).some(function(k) { return u[k].emp == e.id; });
+      return '<tr style="' + (e.estatus == 'Baja' ? 'opacity:.55' : '') + '"><td><span class="tag in">' + esc(e.codigo || '—') + '</span></td><td><span style="cursor:pointer" onclick="verPerfil(\'' + e.id + '\')">' + avatar(e) + '</span><a href="#" class="lnk" onclick="verPerfil(\'' + e.id + '\');return false">' + esc(e.nombre) + '</a>' + (e.estatus == 'Baja' ? ' <span class="tag bd">Baja</span>' : '') + '<br><small style="color:var(--muted)">' + esc(e.puesto) + '</small></td><td>' + e.hEnt + ' – ' + e.hSal + '</td><td>' + antig(e.ingreso) + '</td><td>' + (f ? '<span class="tag bd">Faltan ' + f + '</span>' : '<span class="tag ok">Completo</span>') + '</td><td>' + pdPct(e) + '%</td><td>' + (ac ? '🔑' : '—') + '</td><td><div class="act"><button class="btn g s" onclick="verPerfil(\'' + e.id + '\')">Expediente</button><button class="btn g s" onclick="openEmp(\'' + e.id + '\')">Editar</button><button class="btn g s" onclick="del(\'emps\',\'' + e.id + '\',this)">Eliminar</button></div></td></tr>';
+    }).join('') + '</table>';
+}
+
+function renderFotoModal() {
+  var nom = $('eN') ? $('eN').value.trim() : '';
+  var prev = $('eFotoPrev');
+  var btnDel = $('btnDelEFoto');
+  if (prev) {
+    prev.innerHTML = eFotoTemp
+      ? '<img class="av big" src="' + esc(eFotoTemp) + '" alt="Vista previa">'
+      : '<span class="av big">' + esc(ini(nom || '?')) + '</span>';
+  }
+  if (btnDel) btnDel.style.display = eFotoTemp ? '' : 'none';
+}
+
+function quitarFotoModal() {
+  eFotoTemp = '';
+  renderFotoModal();
+}
+
+function openEmp(id) {
+  var e = emp(id) || {};
+  $('dT').textContent = id ? 'Editar empleado' : 'Nuevo empleado';
+  $('eId').value = e.id || '';
+  $('eCod').value = e.codigo || '';
+  $('eN').value = e.nombre || '';
+  $('eP').value = e.puesto || '';
+  $('eF').value = e.ingreso || today();
+  $('eHe').value = e.hEnt || '09:00';
+  $('eHs').value = e.hSal || '18:00';
+  $('eT').value = e.tel || '';
+  $('eC').value = e.email || '';
+  $('eS').value = e.estatus || 'Activo';
+  $('eB').value = e.fechaBaja || '';
+  $('ePw').value = '';
+  eFotoTemp = e.foto || '';
+  renderFotoModal();
+  resetPwField('ePw', 'btnEyeEPw');
+  $('ePwl').style.display = '';
+  $('dlg').showModal();
+}
+
+function saveEmp(ev) {
+  ev.preventDefault();
+  var id = $('eId').value;
+  var cod = $('eCod').value.trim();
+  var e = emp(id);
+  var pw = $('ePw').value;
+  var em = $('eC').value.trim().toLowerCase();
+  var u = U();
+
+  if (!cod) {
+    toast('Asigna un ID de empleado para su acceso y checador');
+    return;
+  }
+
+  var repetido = S.emps.some(function(x) {
+    return x.id != id && String(x.codigo || '').trim().toLowerCase() === cod.toLowerCase();
+  });
+  if (repetido) {
+    toast('Ese ID ya está asignado a otro colaborador');
+    return;
+  }
+
+  if (pw && (pw.length < 6 || !em)) {
+    toast('Para dar acceso: correo y contraseña de 6+ caracteres');
+    return;
+  }
+  if (pw && mode == 'local' && u[em] && u[em].rol == 'rh') {
+    toast('Ese correo ya es de Recursos Humanos');
+    return;
+  }
+
+  if (!e) {
+    e = { id: uid(), docs: [] };
+    S.emps.push(e);
+  }
+
+  var bj = $('eS').value == 'Baja';
+  Object.assign(e, {
+    codigo: cod,
+    nombre: $('eN').value.trim(),
+    puesto: $('eP').value.trim(),
+    ingreso: $('eF').value,
+    hEnt: $('eHe').value,
+    hSal: $('eHs').value,
+    tel: $('eT').value.trim(),
+    email: em,
+    estatus: $('eS').value,
+    fechaBaja: bj ? ($('eB').value || today()) : ''
+  });
+
+  if (eFotoTemp) e.foto = eFotoTemp;
+  else delete e.foto;
+
+  logAudit('Empleado guardado', 'Se registraron cambios para ' + e.nombre + ' (ID: ' + cod + ')');
+  save();
+  $('dlg').close();
+
+  if (pw && mode == 'cloud') {
+    toast('Guardando acceso...');
+    llamarApi({ accion: 'guardar-acceso', email: em, password: pw, empId: e.id }).then(function(r) {
+      if (r.error) toast('Empleado guardado, pero el acceso falló: ' + r.error);
+      else {
+        ACCESOS[e.id] = em;
+        toast('Empleado y acceso guardados');
       }
+      render();
+    });
+  } else if (pw) {
+    hash(pw, em).then(function(h) {
+      var x = U();
+      x[em] = { h: h, rol: 'emp', emp: e.id };
+      setU(x);
+      toast('Empleado y acceso guardados');
+      render();
+    });
+  } else {
+    toast('Empleado guardado');
+    render();
+  }
+}
+
+function del(col, id, b) {
+  sure(b, function() {
+    if (col == 'emps') {
+      var e = emp(id);
+      if (e) logAudit('Eliminado', 'Se eliminó al empleado ' + e.nombre);
+      S.emps = S.emps.filter(function(x) { return x.id != id; });
+      S.asis = S.asis.filter(function(x) { return x.emp != id; });
+      S.vac = S.vac.filter(function(x) { return x.emp != id; });
+      S.inc = S.inc.filter(function(x) { return x.emp != id; });
+      S.nom = (S.nom || []).filter(function(x) { return x.emp != id; });
+      S.retro = (S.retro || []).filter(function(x) { return x.emp != id; });
+      if (mode == 'cloud') {
+        if (ACCESOS[id]) llamarApi({ accion: 'eliminar', empId: id });
+        delete ACCESOS[id];
+      } else {
+        var u = U();
+        Object.keys(u).forEach(function(k) { if (u[k].emp == id) delete u[k]; });
+        setU(u);
+      }
+    } else {
+      S[col] = S[col].filter(function(x) { return x.id != id; });
     }
-  </script>
+    save();
+    toast('Eliminado');
+    render();
+  });
+}
+
+// ---------- FOTO DE PERFIL (SUBIR O TOMAR CON CÁMARA) ----------
+function guardarFotoComprimida(src, target) {
+  target = target || 'perfil';
+  var img = new Image();
+  img.onload = function() {
+    var size = 320;
+    var canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    var ctx = canvas.getContext('2d');
+    var minSide = Math.min(img.width, img.height);
+    var sx = (img.width - minSide) / 2;
+    var sy = (img.height - minSide) / 2;
+    ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+    var dataUrl = canvas.toDataURL('image/jpeg', 0.82);
+
+    if (target === 'modal') {
+      eFotoTemp = dataUrl;
+      renderFotoModal();
+      toast('Foto lista. Presiona Guardar para aplicar.');
+      return;
+    }
+
+    var e = emp(PV);
+    if (!e) return;
+    e.foto = dataUrl;
+    if (save()) {
+      logAudit('Foto de perfil', 'Actualizó foto de perfil de ' + e.nombre);
+      toast('Foto de perfil actualizada');
+    }
+    rPerfil();
+  };
+  img.src = src;
+}
+
+function procesarFoto(input, target) {
+  var f = input.files && input.files[0];
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function() {
+    guardarFotoComprimida(r.result, target || 'perfil');
+    input.value = '';
+  };
+  r.readAsDataURL(f);
+}
+
+function quitarFoto() {
+  var e = emp(PV);
+  if (!e) return;
+  delete e.foto;
+  save();
+  toast('Foto de perfil eliminada');
+  rPerfil();
+}
+
+function iniciarStreamCamara(abrirModal) {
+  if (camStream) {
+    camStream.getTracks().forEach(function(t) { t.stop(); });
+    camStream = null;
+  }
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: camFacing }, audio: false })
+    .then(function(stream) {
+      camStream = stream;
+      var v = $('camVideo');
+      v.style.transform = camFacing === 'user' ? 'scaleX(-1)' : 'none';
+      v.srcObject = stream;
+      if (abrirModal && !$('dlgCam').open) $('dlgCam').showModal();
+    })
+    .catch(function() {
+      var camFallback = $('fotoCamFallback');
+      if (camFallback) camFallback.click();
+      else toast('No se pudo acceder a la cámara');
+    });
+}
+
+function abrirCamara(target) {
+  camTarget = target || 'perfil';
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    var camFallback = $('fotoCamFallback');
+    if (camFallback) camFallback.click();
+    return;
+  }
+  iniciarStreamCamara(true);
+}
+
+function cambiarCamara() {
+  camFacing = camFacing === 'user' ? 'environment' : 'user';
+  iniciarStreamCamara(false);
+}
+
+function cerrarCamara() {
+  if (camStream) {
+    camStream.getTracks().forEach(function(t) { t.stop(); });
+    camStream = null;
+  }
+  var dlg = $('dlgCam');
+  if (dlg && dlg.open) dlg.close();
+}
+
+function capturarFoto() {
+  var v = $('camVideo');
+  var c = $('camCanvas');
+  if (!v.videoWidth) return;
+  c.width = v.videoWidth;
+  c.height = v.videoHeight;
+  var ctx = c.getContext('2d');
+  if (camFacing === 'user') {
+    ctx.translate(c.width, 0);
+    ctx.scale(-1, 1);
+  }
+  ctx.drawImage(v, 0, 0, c.width, c.height);
+  var dataUrl = c.toDataURL('image/jpeg', 0.88);
+  var targetActual = camTarget;
+  cerrarCamara();
+  guardarFotoComprimida(dataUrl, targetActual);
+}
+
+// ---------- VISTA: PERFIL DE EMPLEADO ----------
+function rPerfil() {
+  var e = emp(PV);
+  var rh = ROL == 'rh';
+
+  if (!e) {
+    $('pf').innerHTML = '<div class="empty">No se encontró este expediente.</div>';
+    return;
+  }
+
+  var s = saldo(e);
+  var t = today();
+  var pmUsados = permisosMesUsados(e.id, t.slice(0, 7));
+  var a = S.asis.find(function(x) { return x.emp == e.id && x.fecha == t; });
+  var es = est(e.id, t);
+  var ms = mstats(t.slice(0, 7), [e]);
+  var D = e.docs || [];
+  var rec = [];
+
+  for (var i = 0; i < 14; i++) {
+    var f = addD(t, -i);
+    var x = est(e.id, f);
+    if (x) {
+      var r = S.asis.find(function(y) { return y.emp == e.id && y.fecha == f; }) || {};
+      rec.push('<tr><td>' + fmt(f) + '</td><td>' + (r.ent || '—') + '</td><td>' + (r.sal || '—') + '</td><td>' + tag(x) + (just(e.id, f) ? ' <span class="tag ok">Justificada</span>' : '') + '</td></tr>');
+    }
+  }
+
+  $('pf').innerHTML = (rh ? '<button class="btn g s" onclick="go(\'personal\')">← Personal</button>' : '') +
+    '<div class="phead">' +
+      '<div class="pf-avatar-wrap">' +
+        avatar(e, true) +
+        '<div class="act" style="justify-content:center">' +
+          '<button class="btn g s" type="button" onclick="abrirCamara(\'perfil\')" title="Tomar foto con cámara">📷 Tomar</button>' +
+          '<button class="btn g s" type="button" onclick="$(\'fotoFile\').click()" title="Subir imagen desde archivo">🖼️ Subir</button>' +
+          (e.foto ? '<button class="btn g s" type="button" onclick="quitarFoto()" title="Quitar foto">✕</button>' : '') +
+          '<input type="file" id="fotoFile" accept="image/*" style="display:none" onchange="procesarFoto(this, \'perfil\')">' +
+          '<input type="file" id="fotoCamFallback" accept="image/*" capture="user" style="display:none" onchange="procesarFoto(this, camTarget)">' +
+        '</div>' +
+      '</div>' +
+      '<div style="flex:1;min-width:200px"><h3 class="t">' + esc(e.nombre) + ' <span class="tag in">ID: ' + esc(e.codigo || 'Sin asignar') + '</span>' + (e.estatus == 'Baja' ? ' <span class="tag bd">Baja</span>' : '') + '</h3><div class="d" style="margin:0">' + esc(e.puesto) + (e.pd && e.pd.fn ? ' · ' + anios(e.pd.fn) + ' años' : '') + ' · Ingreso ' + fmt(e.ingreso) + ' · Antigüedad ' + antig(e.ingreso) + ' · Horario ' + e.hEnt + ' – ' + e.hSal + '</div><div class="d" style="margin:2px 0 0">' + esc(e.tel || '') + ' ' + esc(e.email || '') + '</div></div>' +
+      (rh ? '<button class="btn g s" onclick="openEmp(\'' + e.id + '\')">Editar datos</button>' : '') +
+    '</div>' +
+    '<div class="box"><h4>Asistencia de hoy (Solo consulta)</h4><div class="act" style="justify-content:space-between"><span>Entrada: <b>' + (a && a.ent || '—') + '</b> · Salida: <b>' + (a && a.sal || '—') + '</b> ' + (es ? tag(es) : '') + '</span><span class="tag in">🔒 Registro exclusivo en Terminal Checador</span></div><p class="d" style="margin:8px 0 0">Usa tu ID <b>' + esc(e.codigo || 'asignado por RH') + '</b> en la Terminal Checador de tu empresa. Se marca retardo después de ' + TOLM + ' minutos de tu hora de entrada (' + e.hEnt + ').</p></div>' +
+    '<div class="kpis">' + [
+      [ms.ok, 'A tiempo este mes'],
+      [ms.ret, 'Retardos'],
+      [Math.max(0, MAX_PERMISOS_MES - pmUsados) + ' / ' + MAX_PERMISOS_MES, 'Permisos faltar (mes)'],
+      [s.r, 'Vacaciones disponibles']
+    ].map(function(k) { return '<div class="kpi"><b>' + k[0] + '</b><small>' + k[1] + '</small></div>'; }).join('') + '</div>' +
+    pdBoxes(e) +
+    '<div class="box"><h4>Documentos laborales</h4><div class="act" style="margin-bottom:10px">' + REQD.map(function(t) { var o = D.some(function(d) { return d.tipo == t; }); return '<span class="tag ' + (o ? 'ok' : 'bd') + '">' + (o ? '✓ ' : '✗ ') + t + '</span>'; }).join('') + '</div>' +
+    '<div class="bar"><label>Tipo<select id="dT2">' + DOCT.map(function(t) { return '<option>' + t + '</option>'; }).join('') + '</select></label><label>Archivo (PDF o imagen, máx. 1.2 MB)<input type="file" id="dF" accept=".pdf,image/*"></label><button class="btn" onclick="upDoc()">Subir</button></div>' +
+    (D.length ? '<div class="tw"><table><tr><th>Tipo</th><th>Archivo</th><th>Fecha</th><th>Tamaño</th><th></th></tr>' + D.map(function(d) { return '<tr><td>' + esc(d.tipo) + '</td><td>' + esc(d.nombre) + '</td><td>' + fmt(d.fecha) + '</td><td>' + Math.round(d.size / 1024) + ' KB</td><td><div class="act"><button class="btn g s" onclick="viewDoc(\'' + e.id + '\',\'' + d.id + '\')">Ver</button><button class="btn g s" onclick="delDoc(\'' + e.id + '\',\'' + d.id + '\',this)">Eliminar</button></div></td></tr>'; }).join('') + '</table></div>' : '<div class="empty">Sin documentos todavía.</div>') + '</div>' +
+    '<div class="box"><h4>Vacaciones (Ley Federal del Trabajo)</h4><p style="margin:0 0 8px;font-size:.9rem">Años cumplidos: <b>' + s.y + '</b> · Le corresponden: <b>' + s.d + ' días hábiles</b> en este periodo · Usados: <b>' + s.u + '</b> · Pendientes de autorizar: <b>' + s.p + '</b> · Disponibles: <b>' + s.r + '</b></p><div class="prog"><i style="width:' + (s.d ? Math.min(100, (s.u + s.p) / s.d * 100) : 0) + '%"></i></div><p class="d" style="margin:8px 0 0">' + (s.y < 1 ? 'Cumple 1 año el ' + fmt(s.prox) + ' y tendrá 12 días.' : 'Su siguiente periodo inicia el ' + fmt(s.prox) + '.') + '</p></div>' +
+    '<div class="box"><h4>Asistencia reciente</h4>' + (rec.length ? '<div class="tw"><table><tr><th>Fecha</th><th>Entrada</th><th>Salida</th><th>Estado</th></tr>' + rec.join('') + '</table></div>' : '<div class="empty">Sin registros en los últimos 14 días.</div>') + '</div>';
+}
+
+function clock() {
+  toast('El registro de asistencia solo se realiza en la Terminal Checador');
+}
+
+function upDoc() {
+  var e = emp(PV);
+  var f = $('dF').files[0];
+  if (!f) return toast('Elige un archivo');
+  if (f.size > MAXF) return toast('El archivo pasa de 1.2 MB');
+
+  var r = new FileReader();
+  r.onload = function() {
+    e.docs = e.docs || [];
+    var d = { id: uid(), tipo: $('dT2').value, nombre: f.name, mime: f.type, size: f.size, fecha: today(), data: r.result };
+    e.docs.push(d);
+    if (!save()) e.docs.pop();
+    else {
+      logAudit('Documento Subido', 'Tipo: ' + d.tipo + ' para ' + e.nombre);
+      toast('Documento subido');
+    }
+    rPerfil();
+  };
+  r.readAsDataURL(f);
+}
+
+function viewDoc(eid, id) {
+  openData(emp(eid).docs.find(function(d) { return d.id == id; }));
+}
+
+function delDoc(eid, id, b) {
+  sure(b, function() {
+    var e = emp(eid);
+    e.docs = e.docs.filter(function(d) { return d.id != id; });
+    save();
+    rPerfil();
+  });
+}
+
+// ---------- DATOS PERSONALES Y FAMILIA ----------
+var PAR = ['Cónyuge o pareja', 'Hijo/a', 'Padre', 'Madre', 'Hermano/a', 'Otro'];
+var PK = { fn: 'pFn', ec: 'pEc', na: 'pNa', cu: 'pCu', rf: 'pRf', ns: 'pNs', ts: 'pTs', al: 'pAl', ca: 'pCa', co: 'pCo', ci: 'pCi', es: 'pEs', cp: 'pCp', t2: 'pT2', em: 'pEm', ep: 'pEp', et: 'pEt' };
+
+function pdPct(e) {
+  var p = e.pd || {};
+  var k = ['fn', 'ec', 'ca', 'ci', 'em', 'et'];
+  var n = k.filter(function(x) { return p[x]; }).length + (e.tel ? 1 : 0);
+  return Math.round(n / (k.length + 1) * 100);
+}
+
+function pdBoxes(e) {
+  var p = e.pd || {};
+  var F = e.fam || [];
+  var hij = F.filter(function(f) { return f.par == 'Hijo/a'; }).length;
+  var dep = F.filter(function(f) { return f.dep == 'Sí'; }).length;
+
+  function r(l, v) { return '<div class="kv"><small>' + l + '</small><b>' + (v ? esc(v) : '—') + '</b></div>'; }
+  var dom = [p.ca, p.co, p.ci, p.es, p.cp && 'C.P. ' + p.cp].filter(Boolean).join(', ');
+
+  return '<div class="box"><div class="hr"><h4>Datos personales</h4><button class="btn g s" onclick="openPd()">Editar datos personales</button></div><div class="kvs">' + r('Edad', p.fn ? anios(p.fn) + ' años' : '') + r('Fecha de nacimiento', p.fn ? fmt(p.fn) : '') + r('Estado civil', p.ec) + r('Nacionalidad', p.na) + r('CURP', p.cu) + r('RFC', p.rf) + r('NSS (IMSS)', p.ns) + r('Tipo de sangre', p.ts) + r('Alergias o condiciones médicas', p.al) + '</div></div>' +
+    '<div class="box"><div class="hr"><h4>Domicilio y contacto</h4><button class="btn g s" onclick="openPd()">Editar</button></div><div class="kvs">' + r('Domicilio', dom) + r('Teléfono', e.tel) + r('Teléfono alterno', p.t2) + r('Correo', e.email) + r('Contacto de emergencia', p.em ? p.em + (p.ep ? ' (' + p.ep + ')' : '') : '') + r('Teléfono de emergencia', p.et) + '</div></div>' +
+    '<div class="box"><h4>Familia</h4><p class="d" style="margin:0 0 10px">Estado civil: <b>' + esc(p.ec || '—') + '</b> · Hijos: <b>' + hij + '</b> · Dependientes económicos: <b>' + dep + '</b></p>' +
+    '<div class="bar"><label>Nombre<input id="fN"></label><label>Parentesco<select id="fP">' + PAR.map(function(x) { return '<option>' + x + '</option>'; }).join('') + '</select></label><label>Fecha de nacimiento<input type="date" id="fF"></label><label>Teléfono<input id="fT" type="tel"></label><label>Dependiente económico<select id="fD"><option>No</option><option>Sí</option></select></label><button class="btn" onclick="addFam()">Agregar</button></div>' +
+    (F.length ? '<div class="tw"><table><tr><th>Nombre</th><th>Parentesco</th><th>Edad</th><th>Teléfono</th><th>Dependiente</th><th></th></tr>' + F.map(function(f) { return '<tr><td>' + esc(f.nom) + '</td><td>' + esc(f.par) + '</td><td>' + (f.fn ? anios(f.fn) + ' años' : '—') + '</td><td>' + esc(f.tel || '—') + '</td><td>' + esc(f.dep) + '</td><td><button class="btn g s" onclick="delFam(\'' + e.id + '\',\'' + f.id + '\',this)">Eliminar</button></td></tr>'; }).join('') + '</table></div>' : '<div class="empty">Sin familiares registrados.</div>') + '</div>';
+}
+
+function openPd() {
+  var e = emp(PV);
+  var p = e.pd || {};
+  Object.keys(PK).forEach(function(k) { $(PK[k]).value = p[k] || ''; });
+  $('pTe').value = e.tel || '';
+  $('dlgP').showModal();
+}
+
+function savePd(ev) {
+  ev.preventDefault();
+  var e = emp(PV);
+  var p = {};
+  Object.keys(PK).forEach(function(k) { p[k] = $(PK[k]).value.trim(); });
+  p.cu = p.cu.toUpperCase();
+  p.rf = p.rf.toUpperCase();
+
+  if (p.fn && p.fn > today()) return toast('La fecha de nacimiento no puede ser futura');
+
+  e.pd = p;
+  e.tel = $('pTe').value.trim();
+  save();
+  $('dlgP').close();
+  toast('Datos personales guardados');
+  rPerfil();
+}
+
+function addFam() {
+  var e = emp(PV);
+  var n = $('fN').value.trim();
+  if (!n) return toast('Escribe el nombre del familiar');
+  var f = $('fF').value;
+  if (f && f > today()) return toast('La fecha de nacimiento no puede ser futura');
+
+  e.fam = e.fam || [];
+  e.fam.push({ id: uid(), nom: n, par: $('fP').value, fn: f, tel: $('fT').value.trim(), dep: $('fD').value });
+  save();
+  toast('Familiar agregado');
+  rPerfil();
+}
+
+function delFam(eid, id, b) {
+  sure(b, function() {
+    var e = emp(eid);
+    e.fam = e.fam.filter(function(f) { return f.id != id; });
+    save();
+    rPerfil();
+  });
+}
+
+// ---------- VISTA: ASISTENCIA ----------
+function rAsis() {
+  var f = $('aF').value;
+  if (!f) { f = today(); $('aF').value = f; }
+  var A = act().filter(function(e) { return !e.ingreso || e.ingreso <= f; });
+
+  $('tAsis').innerHTML = A.length ?
+    '<table><tr><th>ID</th><th>Empleado</th><th>Horario</th><th>Entrada</th><th>Salida</th><th>Evidencia</th><th>Estado</th><th></th></tr>' +
+    A.map(function(e) {
+      var a = S.asis.find(function(x) { return x.emp == e.id && x.fecha == f; });
+      var s = est(e.id, f);
+      var lv = s == 'Vacaciones' || s == 'Permiso' || s == 'Incapacidad';
+      var evFoto = (a && a.fotoEnt)
+        ? '<img src="' + esc(a.fotoEnt) + '" alt="Foto checada" title="Clic para ampliar evidencia" style="width:38px;height:30px;object-fit:cover;border-radius:6px;cursor:pointer;border:1px solid var(--brand2)" onclick="openData({data:this.src,mime:\'image/jpeg\'})">'
+        : '<span style="color:var(--muted);font-size:0.78rem">' + esc((a && a.origen) || '—') + '</span>';
+      return '<tr><td><span class="tag in">' + esc(e.codigo || '—') + '</span></td><td>' + avatar(e) + esc(e.nombre) + '</td><td>' + e.hEnt + ' – ' + e.hSal + '</td><td><b>' + (a && a.ent || '—') + '</b></td><td><b>' + (a && a.sal || '—') + '</b></td><td>' + evFoto + '</td><td>' + (s ? tag(s) : '<span class="tag" style="background:var(--surface);color:var(--muted)">Sin registro</span>') + (s && just(e.id, f) ? ' <span class="tag ok">Justificada</span>' : '') + '</td><td><div class="act">' + (lv ? '' : '<button class="btn g s" onclick="editA(\'' + e.id + '\')">Registrar / editar</button>') + (a ? '<button class="btn g s" onclick="del(\'asis\',\'' + a.id + '\',this)">Quitar</button>' : '') + '</div></td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">No hay empleados activos para esta fecha.</div>';
+}
+
+function editA(id) {
+  var f = $('aF').value;
+  var a = S.asis.find(function(x) { return x.emp == id && x.fecha == f; }) || {};
+  $('aE').value = id;
+  $('aI').value = a.ent || '';
+  $('aO').value = a.sal || '';
+  $('aI').focus();
+}
+
+function addAsis() {
+  var e = $('aE').value;
+  var f = $('aF').value;
+  var en = $('aI').value;
+  var sa = $('aO').value;
+
+  if (!e || !f) return toast('Elige empleado y fecha');
+
+  var a = S.asis.find(function(x) { return x.emp == e && x.fecha == f; });
+  if (a) {
+    a.ent = en;
+    a.sal = sa;
+  } else {
+    S.asis.push({ id: uid(), emp: e, fecha: f, ent: en, sal: sa, origen: 'Manual RH' });
+  }
+
+  save();
+  toast('Guardado: ' + (est(e, f) || ''));
+  $('aI').value = $('aO').value = '';
+  rAsis();
+}
+
+function marcarFaltas() {
+  var f = $('aF').value;
+  var n = 0;
+  act().forEach(function(e) {
+    if ((!e.ingreso || e.ingreso <= f) && !est(e.id, f)) {
+      S.asis.push({ id: uid(), emp: e.id, fecha: f, ent: '', sal: '' });
+      n++;
+    }
+  });
+  save();
+  toast(n ? n + ' falta(s) registrada(s)' : 'Todos tienen registro');
+  rAsis();
+}
+
+// ---------- VISTA: VACACIONES Y PERMISOS ----------
+function onVacTipo() {
+  var tp = $('vT') ? $('vT').value : 'Vacaciones';
+  var esHorario = tp == 'Permiso de horario';
+  var esVac = tp == 'Vacaciones';
+
+  if ($('gVMod')) $('gVMod').style.display = esHorario ? '' : 'none';
+  if ($('gVHora')) $('gVHora').style.display = esHorario ? '' : 'none';
+  if ($('gVHasta')) $('gVHasta').style.display = esHorario ? 'none' : '';
+  if ($('gVMot')) $('gVMot').style.display = esVac ? 'none' : '';
+  if ($('lblVDesde')) $('lblVDesde').textContent = esHorario ? 'Fecha del permiso' : 'Desde';
+
+  vPrev();
+}
+
+function vPrev() {
+  var e = ROL == 'rh' ? emp($('vE').value) : emp(ME);
+  var tp = $('vT').value;
+  var d = $('vD').value;
+  var h = tp == 'Permiso de horario' ? d : ($('vH').value || d);
+  var x = $('vInfo');
+
+  if (!e || !x) { if (x) x.textContent = ''; return; }
+
+  var s = saldo(e);
+  var ymRef = (d || today()).slice(0, 7);
+  var pmUsados = permisosMesUsados(e.id, ymRef);
+  var pmDisp = Math.max(0, MAX_PERMISOS_MES - pmUsados);
+  var regla = REGLAS_VAC[tp] || { ant: 0, label: '' };
+
+  var antHtml = '';
+  if (d) {
+    var antDias = diffDays(today(), d);
+    if (antDias >= regla.ant) {
+      antHtml = ' · <span class="tag ok">✓ Anticipación: ' + antDias + ' día(s) (mín. ' + regla.ant + ')</span>';
+    } else {
+      antHtml = ' · <span class="tag bd">⚠ Anticipación: ' + antDias + ' día(s) (requiere mín. ' + regla.ant + ')</span>';
+    }
+  }
+
+  var diasSolHtml = '';
+  if (d && h >= d) {
+    if (tp == 'Permiso de horario') {
+      diasSolHtml = ' · Modalidad: <b>' + esc($('vMod').value) + '</b>';
+    } else {
+      diasSolHtml = ' · Días hábiles solicitados: <b>' + dh(d, h) + '</b>';
+    }
+  }
+
+  x.innerHTML = '<b>' + esc(e.nombre) + '</b> · Vacaciones disponibles: <b>' + s.r + ' días</b> · Permisos para faltar (' + ymRef + '): <b>' + pmDisp + ' de ' + MAX_PERMISOS_MES + ' disponibles</b>' + diasSolHtml + antHtml;
+}
+
+function addVac() {
+  var id = ROL == 'rh' ? $('vE').value : ME;
+  var e = emp(id);
+  var tp = $('vT').value;
+  var esHorario = tp == 'Permiso de horario';
+  var d = $('vD').value;
+  var h = esHorario ? d : ($('vH').value || d);
+  var mod = esHorario ? $('vMod').value : '';
+  var hora = esHorario ? $('vHora').value : '';
+  var mot = $('vMot') ? $('vMot').value.trim() : '';
+
+  if (!e || !d) return toast('Elige empleado y fecha');
+  if (h < d) return toast('La fecha final es anterior a la inicial');
+
+  var regla = REGLAS_VAC[tp] || { ant: 0 };
+  var antDias = diffDays(today(), d);
+  if (antDias < regla.ant && ROL != 'rh') {
+    return toast('Este tipo de permiso requiere al menos ' + regla.ant + ' día(s) de anticipación');
+  }
+
+  if (esHorario && !hora) {
+    return toast('Indica la hora estimada para llegar después o salir antes');
+  }
+
+  if (tp == 'Vacaciones') {
+    var s = saldo(e);
+    var n = dh(d, h);
+    if (s.y < 1) return toast('Aún no cumple 1 año. Cumple el ' + fmt(s.prox));
+    if (n < 1) return toast('Las fechas elegidas no incluyen días hábiles');
+    if (n > s.r) return toast('Solo tiene ' + s.r + ' días disponibles');
+  }
+
+  if (tp == 'Permiso para faltar') {
+    var nPerm = dh(d, h);
+    if (nPerm < 1) return toast('El permiso para faltar debe incluir al menos 1 día hábil');
+    var porMes = {};
+    var curD = d;
+    while (curD <= h) {
+      var w = new Date(curD + 'T12:00:00').getDay();
+      if (w > 0 && w < 6) {
+        var ym = curD.slice(0, 7);
+        porMes[ym] = (porMes[ym] || 0) + 1;
+      }
+      curD = addD(curD, 1);
+    }
+    var mesesExcedidos = Object.keys(porMes).filter(function(ym) {
+      return permisosMesUsados(id, ym) + porMes[ym] > MAX_PERMISOS_MES;
+    });
+    if (mesesExcedidos.length) {
+      return toast('Límite excedido: máximo ' + MAX_PERMISOS_MES + ' días de permiso para faltar al mes (' + mesesExcedidos[0] + ')');
+    }
+  }
+
+  S.vac.push({
+    id: uid(),
+    emp: id,
+    tipo: tp,
+    modalidad: mod,
+    hora: hora,
+    motivo: mot,
+    anticipacion: antDias,
+    desde: d,
+    hasta: h,
+    estado: ROL == 'rh' ? 'Autorizado' : 'Pendiente'
+  });
+
+  logAudit('Solicitud Permiso/Vacaciones', tp + (mod ? ' (' + mod + ')' : '') + ' para ' + e.nombre + ' del ' + d + ' al ' + h);
+  save();
+  if ($('vMot')) $('vMot').value = '';
+  if ($('vHora')) $('vHora').value = '';
+  toast(ROL == 'rh' ? 'Registrado y autorizado' : 'Solicitud enviada a Recursos Humanos');
+  rVac();
+}
+
+function setV(id, s) {
+  if (ROL != 'rh') return;
+  var v = S.vac.find(function(x) { return x.id == id; });
+  if (v) {
+    v.estado = s;
+    logAudit('Cambio Estatus Permiso', 'Solicitud de ' + nm(v.emp) + ' pasó a ' + s);
+  }
+  save();
+  rVac();
+}
+
+function rVac() {
+  var rh = ROL == 'rh';
+  var L = S.vac.filter(function(v) { return rh || v.emp == ME; }).slice().reverse();
+  var ymActual = today().slice(0, 7);
+
+  $('tVac').innerHTML = L.length ?
+    '<table><tr>' + (rh ? '<th>Empleado</th>' : '') + '<th>Tipo / Detalle</th><th>Fechas</th><th>Días / Anticipación</th><th>Estado</th><th></th></tr>' +
+    L.map(function(v) {
+      var det = esc(v.tipo);
+      if (v.modalidad) det += '<br><small style="color:var(--brand)">' + esc(v.modalidad) + (v.hora ? ' · ' + esc(v.hora) : '') + '</small>';
+      if (v.motivo) det += '<br><small style="color:var(--muted)">Motivo: ' + esc(v.motivo) + '</small>';
+      var diasTxt = v.tipo == 'Permiso de horario' ? 'Horario' : dh(v.desde, v.hasta) + ' día(s)';
+      var antTxt = typeof v.anticipacion === 'number' ? '<br><small style="color:var(--muted)">Ant.: ' + v.anticipacion + 'd</small>' : '';
+      return '<tr>' + (rh ? '<td>' + esc(nm(v.emp)) + '</td>' : '') + '<td>' + det + '</td><td>' + fmt(v.desde) + (v.hasta != v.desde ? ' – ' + fmt(v.hasta) : '') + '</td><td>' + diasTxt + antTxt + '</td><td>' + tag(v.estado) + '</td><td><div class="act">' + (rh && v.estado == 'Pendiente' ? '<button class="btn s" onclick="setV(\'' + v.id + '\',\'Autorizado\')">Autorizar</button><button class="btn g s" onclick="setV(\'' + v.id + '\',\'Rechazado\')">Rechazar</button>' : '') + ((rh || v.estado == 'Pendiente') ? '<button class="btn g s" onclick="del(\'vac\',\'' + v.id + '\',this)">Eliminar</button>' : '') + '</div></td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">Aún no hay solicitudes.</div>';
+
+  var E = rh ? act() : [emp(ME)].filter(Boolean);
+  $('bal').innerHTML = E.length ?
+    '<div class="tw"><table><tr><th>Empleado</th><th>Antigüedad</th><th>Vacaciones ley</th><th>Usadas / Pend.</th><th>Vac. disponibles</th><th>Permisos faltar (' + ymActual + ')</th></tr>' +
+    E.map(function(e) {
+      var s = saldo(e);
+      var pmU = permisosMesUsados(e.id, ymActual);
+      var pmD = Math.max(0, MAX_PERMISOS_MES - pmU);
+      return '<tr><td>' + esc(e.nombre) + '</td><td>' + antig(e.ingreso) + '</td><td>' + s.d + ' días' + (s.y < 1 ? '<br><small>Cumple 1 año el ' + fmt(s.prox) + '</small>' : '') + '</td><td>' + s.u + ' / ' + s.p + '</td><td><b>' + s.r + ' días</b></td><td><span class="tag ' + (pmD > 0 ? 'ok' : 'bd') + '">' + pmU + ' / ' + MAX_PERMISOS_MES + ' usados (' + pmD + ' disp.)</span></td></tr>';
+    }).join('') + '</table></div>' :
+    '<div class="empty">Sin empleados.</div>';
+
+  vPrev();
+}
+
+// ---------- VISTA: INCIDENCIAS ----------
+function initInc() {
+  $('iT').innerHTML = Object.keys(TI).filter(function(k) { return ROL == 'rh' || !TI[k].rh; }).map(function(k) { return '<option>' + k + '</option>'; }).join('');
+  onTipo();
+}
+
+function onTipo() {
+  var c = TI[$('iT').value];
+  Object.keys(GL).forEach(function(k) {
+    var g = $('g' + k);
+    g.style.display = c.f.indexOf(k) > -1 ? '' : 'none';
+    g.firstElementChild.textContent = GL[k] + (c.r.indexOf(k) > -1 ? ' *' : '');
+  });
+}
+
+function justif(id, f) {
+  $('iT').value = 'Justificante de falta o retardo';
+  onTipo();
+  $('iF').value = f;
+  if (ROL == 'rh') $('iE').value = id;
+  $('iT').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  $('iM').focus();
+}
+
+function addInc() {
+  var tp = $('iT').value;
+  var c = TI[tp];
+  var e = ROL == 'rh' ? $('iE').value : ME;
+  var f = $('iF').value;
+
+  if (!e || !f) return toast('Elige empleado y fecha');
+
+  var v = { M: $('iM').value.trim(), Fo: $('iFo').value.trim(), Di: $('iDi').value, Lu: $('iLu').value.trim(), Ad: $('iAd').files[0] };
+
+  for (var i = 0; i < c.r.length; i++) {
+    if (!v[c.r[i]]) return toast('Falta: ' + GL[c.r[i]].replace(/ \(.*/, ''));
+  }
+
+  if (v.Ad && v.Ad.size > MAXF) return toast('El archivo pasa de 1.2 MB');
+
+  function fin(adj) {
+    S.inc.push({ id: uid(), emp: e, fecha: f, tipo: tp, motivo: v.M, folio: v.Fo, dias: v.Di, lugar: v.Lu, adj: adj || null, estado: ROL == 'rh' ? 'Registrada' : 'Pendiente' });
+    if (!save()) {
+      S.inc.pop();
+      return;
+    }
+    logAudit('Registro Incidencia', tp + ' para ' + nm(e));
+    ['iM', 'iFo', 'iDi', 'iLu', 'iAd'].forEach(function(x) { $(x).value = ''; });
+    toast(ROL == 'rh' ? 'Incidencia registrada' : 'Enviada a Recursos Humanos');
+    rInc();
+  }
+
+  if (v.Ad) {
+    var r = new FileReader();
+    r.onload = function() { fin({ nombre: v.Ad.name, mime: v.Ad.type, data: r.result }); };
+    r.readAsDataURL(v.Ad);
+  } else {
+    fin();
+  }
+}
+
+function setI(id, s) {
+  if (ROL != 'rh') return;
+  var i = S.inc.find(function(x) { return x.id == id; });
+  if (i) {
+    i.estado = s;
+    logAudit('Cambio Estatus Incidencia', 'Incidencia de ' + nm(i.emp) + ' cambió a ' + s);
+  }
+  save();
+  rInc();
+}
+
+function viewInc(id) {
+  openData(S.inc.find(function(i) { return i.id == id; }).adj);
+}
+
+function rInc() {
+  var rh = ROL == 'rh';
+  var E = rh ? act() : [emp(ME)].filter(Boolean);
+  var t = today();
+  var A = [];
+
+  for (var i = 0; i < 30; i++) {
+    var f = addD(t, -i);
+    E.forEach(function(e) {
+      var s = est(e.id, f);
+      if (s == 'Retardo' || s == 'Falta' || s == 'Sin entrada') A.push({ e: e, f: f, s: s });
+    });
+  }
+
+  $('tAuto').innerHTML = A.length ?
+    '<table><tr><th>Fecha</th>' + (rh ? '<th>Empleado</th>' : '') + '<th>Incidencia</th><th></th></tr>' +
+    A.map(function(x) {
+      return '<tr><td>' + fmt(x.f) + '</td>' + (rh ? '<td>' + esc(x.e.nombre) + '</td>' : '') + '<td>' + tag(x.s) + '</td><td>' + (just(x.e.id, x.f) ? '<span class="tag ok">Justificada</span>' : '<button class="btn g s" onclick="justif(\'' + x.e.id + '\',\'' + x.f + '\')">Justificar</button>') + '</td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">Sin retardos ni faltas en los últimos 30 días.</div>';
+
+  var L = S.inc.filter(function(i) { return rh || i.emp == ME; }).slice().reverse();
+
+  $('tInc').innerHTML = L.length ?
+    '<table><tr><th>Fecha</th>' + (rh ? '<th>Empleado</th>' : '') + '<th>Tipo</th><th>Detalle</th><th>Estado</th><th></th></tr>' +
+    L.map(function(i) {
+      var d = [i.motivo && esc(i.motivo), i.folio && 'Folio: ' + esc(i.folio), i.dias && i.dias + ' día(s)', i.lugar && 'Lugar: ' + esc(i.lugar)].filter(Boolean).join(' · ');
+      return '<tr><td>' + fmt(i.fecha) + '</td>' + (rh ? '<td>' + esc(nm(i.emp)) + '</td>' : '') + '<td>' + esc(i.tipo) + '</td><td>' + d + (i.adj ? ' <button class="tag in" onclick="viewInc(\'' + i.id + '\')">📎 Ver</button>' : '') + '</td><td>' + tag(i.estado) + '</td><td><div class="act">' + (rh && i.estado == 'Pendiente' ? '<button class="btn s" onclick="setI(\'' + i.id + '\',\'Aprobada\')">Aprobar</button><button class="btn g s" onclick="setI(\'' + i.id + '\',\'Rechazada\')">Rechazar</button>' : '') + ((rh || i.estado == 'Pendiente') ? '<button class="btn g s" onclick="del(\'inc\',\'' + i.id + '\',this)">Eliminar</button>' : '') + '</div></td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">Aún no hay incidencias registradas.</div>';
+}
+
+// ---------- VISTA: RECIBOS DE NÓMINA (PERFIL RH) ----------
+function addNomina() {
+  var eId = $('nomE').value;
+  var per = $('nomP').value;
+  var tipoPago = $('nomTipo') ? $('nomTipo').value : 'Mensual';
+  var monto = $('nomM').value;
+  var file = $('nomF').files[0];
+
+  if (!eId || !per || !monto) return toast('Completa empleado, periodo y sueldo neto');
+  if (!file) return toast('Selecciona el archivo PDF o imagen del recibo de nómina');
+  if (file.size > MAXF) return toast('El archivo sobrepasa los 1.2 MB');
+
+  var r = new FileReader();
+  r.onload = function() {
+    S.nom = S.nom || [];
+    S.nom.push({
+      id: uid(),
+      emp: eId,
+      periodo: per,
+      tipoPago: tipoPago,
+      monto: monto,
+      fecha: today(),
+      adj: { nombre: file.name, mime: file.type, data: r.result }
+    });
+    if (!save()) {
+      S.nom.pop();
+      return;
+    }
+    logAudit('Recibo de Nómina Subido', 'Periodo ' + per + ' (' + tipoPago + ') para ' + nm(eId) + ' por $' + monto);
+    toast('Recibo de nómina subido correctamente');
+    $('nomM').value = '';
+    $('nomF').value = '';
+    rNom();
+  };
+  r.readAsDataURL(file);
+}
+
+function rNom() {
+  var filtE = $('nomFiltE') ? $('nomFiltE').value : '';
+  var L = (S.nom || []).filter(function(n) {
+    return !filtE || n.emp == filtE;
+  }).slice().reverse();
+
+  $('tNom').innerHTML = L.length ?
+    '<table><tr><th>Empleado</th><th>Periodo</th><th>Tipo de pago</th><th>Monto Neto</th><th>Fecha Carga</th><th>Recibo</th><th></th></tr>' +
+    L.map(function(n) {
+      return '<tr><td>' + esc(nm(n.emp)) + '</td><td>' + esc(n.periodo) + '</td><td>' + esc(n.tipoPago || 'Mensual') + '</td><td><b>$' + parseFloat(n.monto).toFixed(2) + '</b></td><td>' + fmt(n.fecha) + '</td><td>' + (n.adj ? '<div class="act"><button class="btn g s" onclick="viewNom(\'' + n.id + '\')">👁️ Visualizar</button><button class="btn g s" onclick="dlNom(\'' + n.id + '\')">⬇️ Descargar</button></div>' : '—') + '</td><td><button class="btn g s" onclick="del(\'nom\',\'' + n.id + '\',this)">Eliminar</button></td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">No hay recibos de nómina registrados.</div>';
+}
+
+function viewNom(id) {
+  var n = (S.nom || []).find(function(x) { return x.id == id; });
+  if (n && n.adj) openData(n.adj);
+  else toast('Este recibo no tiene archivo adjunto');
+}
+
+function dlNom(id) {
+  var n = (S.nom || []).find(function(x) { return x.id == id; });
+  if (n && n.adj) {
+    var nombreEmp = nm(n.emp).replace(/\s+/g, '_');
+    downloadData(n.adj, 'Recibo_Nomina_' + nombreEmp + '_' + n.periodo);
+  } else {
+    toast('Este recibo no tiene archivo adjunto');
+  }
+}
+
+// ---------- VISTA: RETROALIMENTACIÓN Y REPORTES ADMINISTRATIVOS (RH Y EMPLEADO) ----------
+function addRetro() {
+  var eId = $('retE').value;
+  var cat = $('retC').value;
+  var tit = $('retT').value.trim();
+  var det = $('retD').value.trim();
+
+  if (!eId || !tit || !det) return toast('Completa empleado, asunto y detalle');
+
+  S.retro = S.retro || [];
+  S.retro.push({
+    id: uid(),
+    emp: eId,
+    fecha: today(),
+    categoria: cat,
+    titulo: tit,
+    detalle: det,
+    autor: 'Recursos Humanos'
+  });
+
+  logAudit('Reporte / Retroalimentación', cat + ' para ' + nm(eId) + ': ' + tit);
+  save();
+  $('retT').value = '';
+  $('retD').value = '';
+  toast('Registro guardado correctamente');
+  rAud();
+}
+
+function addRetroEmp() {
+  var tit = $('empRetT').value.trim();
+  var det = $('empRetD').value.trim();
+  if (!tit || !det) return toast('Escribe un asunto y tu comentario');
+
+  S.retro = S.retro || [];
+  S.retro.push({
+    id: uid(),
+    emp: ME,
+    fecha: today(),
+    categoria: 'Comentario de empleado',
+    titulo: tit,
+    detalle: det,
+    autor: nm(ME)
+  });
+
+  logAudit('Comentario de empleado', nm(ME) + ' envió retroalimentación: ' + tit);
+  save();
+  $('empRetT').value = '';
+  $('empRetD').value = '';
+  toast('Comentario enviado a Recursos Humanos');
+  rRetroEmp();
+}
+
+function rAud() {
+  var filt = $('retFilt') ? $('retFilt').value : '';
+  var R = (S.retro || []).filter(function(r) {
+    return !filt || r.categoria == filt;
+  }).slice().reverse();
+
+  $('tRetro').innerHTML = R.length ?
+    '<table><tr><th>Fecha</th><th>Empleado</th><th>Categoría</th><th>Asunto</th><th>Detalle</th><th>Emitido por</th><th></th></tr>' +
+    R.map(function(r) {
+      return '<tr><td>' + fmt(r.fecha) + '</td><td>' + esc(nm(r.emp)) + '</td><td>' + tag(r.categoria) + '</td><td><b>' + esc(r.titulo) + '</b></td><td>' + esc(r.detalle) + '</td><td>' + esc(r.autor || 'RH') + '</td><td><button class="btn g s" onclick="del(\'retro\',\'' + r.id + '\',this)">Eliminar</button></td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">No hay reportes administrativos ni retroalimentación registrada.</div>';
+
+  var A = (S.aud || []).slice();
+  $('tAud').innerHTML = A.length ?
+    '<table><tr><th>Fecha/Hora</th><th>Usuario</th><th>Acción</th><th>Detalle</th></tr>' +
+    A.map(function(a) {
+      return '<tr><td>' + esc(a.fecha) + '</td><td>' + esc(a.usuario) + '</td><td><span class="tag in">' + esc(a.accion) + '</span></td><td>' + esc(a.detalle) + '</td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">Sin eventos en bitácora.</div>';
+}
+
+function rRetroEmp() {
+  var R = (S.retro || []).filter(function(r) { return r.emp == ME; }).slice().reverse();
+  $('tRetroEmp').innerHTML = R.length ?
+    '<table><tr><th>Fecha</th><th>Categoría</th><th>Asunto</th><th>Detalle</th><th>De</th></tr>' +
+    R.map(function(r) {
+      return '<tr><td>' + fmt(r.fecha) + '</td><td>' + tag(r.categoria) + '</td><td><b>' + esc(r.titulo) + '</b></td><td>' + esc(r.detalle) + '</td><td>' + esc(r.autor || 'Recursos Humanos') + '</td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">No tienes retroalimentación ni reportes administrativos registrados.</div>';
+}
+
+// ---------- VISTA: RECIBOS DE NÓMINA (PERFIL EMPLEADO) ----------
+function rRec() {
+  var todos = (S.nom || []).filter(function(n) { return n.emp == ME; });
+  var selA = $('recAnio');
+  if (selA) {
+    var valA = selA.value;
+    var aniosUnicos = Array.from(new Set(todos.map(function(n) { return (n.periodo || '').slice(0, 4); }).filter(Boolean))).sort().reverse();
+    selA.innerHTML = '<option value="">Todos los años</option>' + aniosUnicos.map(function(a) { return '<option value="' + a + '">' + a + '</option>'; }).join('');
+    if (valA && aniosUnicos.indexOf(valA) > -1) selA.value = valA;
+  }
+
+  var filtroAnio = selA ? selA.value : '';
+  var L = todos.filter(function(n) {
+    return !filtroAnio || (n.periodo || '').indexOf(filtroAnio) === 0;
+  }).slice().reverse();
+
+  $('tRec').innerHTML = L.length ?
+    '<table><tr><th>Periodo</th><th>Tipo de pago</th><th>Monto Neto</th><th>Fecha Emisión</th><th>Recibo de nómina</th></tr>' +
+    L.map(function(n) {
+      return '<tr><td><b>' + esc(n.periodo) + '</b></td><td>' + esc(n.tipoPago || 'Mensual') + '</td><td><b>$' + parseFloat(n.monto).toFixed(2) + '</b></td><td>' + fmt(n.fecha) + '</td><td>' + (n.adj ? '<div class="act"><button class="btn g s" onclick="viewNom(\'' + n.id + '\')">👁️ Visualizar</button><button class="btn s" onclick="dlNom(\'' + n.id + '\')">⬇️ Descargar</button></div>' : '<span class="tag wa">En proceso</span>') + '</td></tr>';
+    }).join('') + '</table>' :
+    '<div class="empty">No tienes recibos de nómina disponibles en este historial.</div>';
+}
+
+// ---------- VISTA: NOTIFICACIONES (PERFIL EMPLEADO) ----------
+function rNot() {
+  var e = emp(ME);
+  if (!e) return;
+  var vacs = (S.vac || []).filter(function(v) { return v.emp == ME; });
+  var incs = (S.inc || []).filter(function(i) { return i.emp == ME; });
+  var noms = (S.nom || []).filter(function(n) { return n.emp == ME; });
+  var rets = (S.retro || []).filter(function(r) { return r.emp == ME && r.categoria != 'Comentario de empleado'; });
+
+  var list = [];
+
+  vacs.forEach(function(v) {
+    list.push('<li><span>Solicitud de ' + esc(v.tipo.toLowerCase()) + ' (' + fmt(v.desde) + ')</span>' + tag(v.estado) + '</li>');
+  });
+
+  incs.forEach(function(i) {
+    list.push('<li><span>Incidencia: ' + esc(i.tipo) + ' (' + fmt(i.fecha) + ')</span>' + tag(i.estado) + '</li>');
+  });
+
+  noms.forEach(function(n) {
+    list.push('<li><span>Nuevo recibo de nómina publicado para el periodo ' + esc(n.periodo) + '</span><span class="tag ok">Disponible</span></li>');
+  });
+
+  rets.forEach(function(r) {
+    list.push('<li><span>' + esc(r.categoria) + ': ' + esc(r.titulo) + ' (' + fmt(r.fecha) + ')</span>' + tag(r.categoria) + '</li>');
+  });
+
+  $('tNot').innerHTML = list.length ? list.join('') : '<li style="color:var(--muted)">Sin notificaciones por el momento.</li>';
+}
+
+// ---------- VISTA: REPORTES ----------
+function rRep() {
+  var ym = $('rM').value;
+  if (!ym) { ym = today().slice(0, 7); $('rM').value = ym; }
+
+  var A = act();
+  var m = mstats(ym);
+  var bajas = S.emps.filter(function(e) { return e.estatus == 'Baja' && (e.fechaBaja || '').slice(0, 7) == ym; }).length;
+  var rot = A.length + bajas ? Math.round(bajas / (A.length + bajas) * 100) : 0;
+  var im = S.inc.filter(function(i) { return i.fecha.slice(0, 7) == ym; }).length;
+  var vm = S.vac.filter(function(v) { return v.desde.slice(0, 7) == ym; });
+  var avg = A.length ? (A.reduce(function(s, e) { return s + anios(e.ingreso); }, 0) / A.length).toFixed(1) : '0';
+  var mx = Math.max(1, m.ret, m.fal, m.sin, m.per + m.vac, m.inc);
+
+  var tr = '';
+  for (var i = 4; i >= 0; i--) {
+    var k = addMes(ym, -i);
+    var p = pct(mstats(k));
+    tr += '<div title="' + p + '%"><span style="height:' + p + '%"></span>' + k.slice(5) + '/' + k.slice(2, 4) + '</div>';
+  }
+
+  function bar(l, v) {
+    return '<p style="margin:8px 0 4px;font-size:.86rem">' + l + ': ' + v + '</p><div class="prog"><i style="width:' + (v / mx * 100) + '%"></i></div>';
+  }
+
+  $('rep').innerHTML = '<div class="kpis">' + [
+    [pct(m) + '%', 'Asistencia del mes'],
+    [m.ret + m.fal + m.sin + im, 'Incidencias'],
+    [rot + '%', 'Rotación (bajas: ' + bajas + ')'],
+    [A.length, 'Empleados activos'],
+    [avg, 'Antigüedad promedio (años)'],
+    [vm.length, 'Solicitudes de vacaciones y permisos']
+  ].map(function(k) { return '<div class="kpi"><b>' + k[0] + '</b><small>' + k[1] + '</small></div>'; }).join('') + '</div>' +
+  '<div class="grid2"><div class="box"><h4>Tendencia de asistencia (últimos 5 meses)</h4><div class="bars">' + tr + '</div></div><div class="box"><h4>Días por tipo en el mes</h4>' + bar('Retardos', m.ret) + bar('Faltas', m.fal) + bar('Sin entrada', m.sin) + bar('Permisos y vacaciones', m.per + m.vac) + bar('Incapacidades', m.inc) + '</div></div>' +
+  (A.length ? '<div class="tw"><table><tr><th>Empleado</th><th>A tiempo</th><th>Retardos</th><th>Faltas</th><th>Permisos / vacaciones</th><th>% asistencia</th><th>Vacaciones disponibles</th></tr>' +
+    A.map(function(e) {
+      var x = mstats(ym, [e]);
+      return '<tr><td>' + esc(e.nombre) + '</td><td>' + x.ok + '</td><td>' + x.ret + '</td><td>' + x.fal + '</td><td>' + (x.per + x.vac + x.inc) + '</td><td>' + pct(x) + '%</td><td>' + saldo(e).r + '</td></tr>';
+    }).join('') + '</table></div>' : '<div class="empty">Sin datos todavía.</div>');
+}
+
+// ---------- LIMPIEZA DE DATOS ----------
+function reset(b) {
+  sure(b, function() {
+    S = { emps: [], asis: [], vac: [], inc: [], nom: [], aud: [], retro: [] };
+    save();
+    toast('Datos borrados');
+    render();
+  });
+}
+
+// ---------- INICIALIZACIÓN ----------
+if (mode == 'cloud') {
+  $('t1').style.display = 'none';
+  $('hint').textContent = 'Entra con el correo y la contraseña que te dio Recursos Humanos.';
+} else {
+  $('hint').textContent = 'Modo almacenamiento local activo. Crea una cuenta para comenzar.';
+}
+
+(function() {
+  var raw = null;
+  try { raw = localStorage.getItem('rh3.data'); } catch (e) {}
+
+  if (!raw) {
+    try {
+      localStorage.setItem('rh3.data', JSON.stringify({ emps: [], asis: [], vac: [], inc: [], nom: [], aud: [], retro: [] }));
+    } catch (e) {}
+  }
+
+  $('login').style.display = 'grid';
+  $('appw').style.display = 'none';
+})();
+</script>
 </body>
 </html>
