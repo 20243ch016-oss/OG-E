@@ -1532,7 +1532,36 @@ function saveEmp(ev) {
   var pw = $('ePw').value;
   var em = $('eC').value.trim().toLowerCase();
   var u = U();
+function guardarEmpleado() {
+  const nombre = document.getElementById('eNom').value.trim();
+  const puesto = document.getElementById('ePue').value.trim();
+  
+  // <--- NUEVO: Leer y validar el ID que asigna RH
+  const codigo = document.getElementById('eCod').value.trim();
+  if (!codigo) {
+    alert('Asigna un ID de empleado para su acceso y checador');
+    return;
+  }
+  const repetido = empleados.some(
+    e => e.id !== editId && String(e.codigo || '').toLowerCase() === codigo.toLowerCase()
+  );
+  if (repetido) {
+    alert('Ese ID ya pertenece a otro colaborador');
+    return;
+  }
+  // <--- FIN DE LO NUEVO
 
+  // Más abajo, donde armas el objeto del empleado, agregas `codigo`:
+  const datosEmpleado = {
+    id: editId || Date.now(),
+    codigo: codigo, // <--- NUEVO: Guardar el ID en el objeto
+    nombre: nombre,
+    puesto: puesto
+    // ... resto de tus campos (correo, password, horaEntrada, etc.)
+  };
+
+  // ... aquí sigue tu código que guarda en Supabase
+}
   if (pw && (pw.length < 6 || !em)) {
     toast('Para dar acceso: correo y contraseña de 6+ caracteres');
     return;
